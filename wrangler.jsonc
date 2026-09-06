@@ -1,14 +1,43 @@
 {
 	"$schema": "./node_modules/wrangler/config-schema.json",
-	"compatibility_date": "2026-09-03",
-	"compatibility_flags": ["global_fetch_strictly_public"],
 	"name": "qairuhub-website",
 	"main": "@astrojs/cloudflare/entrypoints/server",
+
+	// Derived from the locally installed workerd. Do not hand-edit this to a
+	// date newer than your workerd build — the dev server will refuse to start.
+	"compatibility_date": "2026-09-03",
+	"compatibility_flags": ["global_fetch_strictly_public"],
+
 	"assets": {
 		"directory": "./dist",
 		"binding": "ASSETS"
 	},
+
 	"observability": {
 		"enabled": true
-	}
+	},
+
+	// Form submissions: applications, RSVPs, contact messages.
+	// TODO:INFRA — create with `wrangler d1 create qairuhub` and paste the real
+	// database_id here. Local development works without it.
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "qairuhub",
+			"database_id": "REPLACE_WITH_REAL_D1_ID",
+			"migrations_dir": "migrations"
+		}
+	],
+
+	// Original media (photography, logos) before optimisation.
+	// TODO:INFRA — create with `wrangler r2 bucket create qairuhub-media`.
+	"r2_buckets": [
+		{
+			"binding": "MEDIA",
+			"bucket_name": "qairuhub-media"
+		}
+	]
+
+	// SESSION (KV) and IMAGES bindings are provisioned automatically by
+	// @astrojs/cloudflare. Declare them here only if you need to pin their ids.
 }
