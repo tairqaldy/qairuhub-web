@@ -1,0 +1,679 @@
+/*
+ * QairuHub component layer — the type scale, the shell, and the three registers.
+ *
+ * Every cobalt reference on the site lives in this file or in global.css, inside
+ * a named `@layer components` block. `scripts/check-cobalt.mjs` enforces that.
+ */
+
+/* ─────────────────────────────────────────────────────── type scale ─── */
+
+@layer components {
+	/* Display — four jobs only: nameplate, decks, section heads, rail numerals.
+	   Never UI, never uppercase, never below 1.125rem, never positive tracking. */
+	.d1,
+	.d2,
+	.d3,
+	.d4,
+	.d5,
+	.dn {
+		font-family: var(--font-display);
+		text-wrap: balance;
+	}
+
+	.d1 {
+		font-size: clamp(2.5rem, 6.2vw, 5.5rem);
+		line-height: 0.9;
+		letter-spacing: -0.03em;
+		font-weight: 700;
+	}
+	.d2 {
+		font-size: clamp(2rem, 3.6vw, 3.5rem);
+		line-height: 0.98;
+		letter-spacing: -0.025em;
+		font-weight: 600;
+	}
+	.d3 {
+		font-size: clamp(1.625rem, 2.2vw, 2.125rem);
+		line-height: 1.02;
+		letter-spacing: -0.02em;
+		font-weight: 600;
+	}
+	.d4 {
+		font-size: 1.375rem;
+		line-height: 1.15;
+		letter-spacing: -0.01em;
+		font-weight: 600;
+	}
+	.d5 {
+		font-size: 1.125rem;
+		line-height: 1.25;
+		letter-spacing: -0.005em;
+		font-weight: 600;
+	}
+	.dn {
+		font-size: 3.5rem;
+		line-height: 1;
+		letter-spacing: -0.02em;
+		font-weight: 700;
+		color: var(--ink-4); /* ≥24px, so 4.1:1 is within 1.4.3 for large text */
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* Body — weights 400 and 500 only. */
+	.lead {
+		font-size: 1.0625rem;
+		line-height: 1.55;
+		max-inline-size: 62ch;
+	}
+	.body {
+		font-size: 1rem;
+		line-height: 1.6;
+		max-inline-size: 62ch;
+	}
+	.longform {
+		font-size: 1.0625rem;
+		line-height: 1.65;
+		max-inline-size: 68ch;
+	}
+	.small {
+		font-size: 0.875rem;
+		line-height: 1.5;
+	}
+
+	/* Mono — the institutional voice, roughly a third of the type on the site.
+	   This is what makes a page read as a printed record, not a product page. */
+	.m-eyebrow,
+	.m-label,
+	.m-data,
+	.m-note,
+	.m-button {
+		font-family: var(--font-mono);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.m-eyebrow {
+		font-size: var(--m-eyebrow-size, 0.6875rem);
+		line-height: 1;
+		letter-spacing: var(--m-eyebrow-track, 0.14em);
+		font-weight: 500;
+		text-transform: uppercase;
+		color: var(--ink-3);
+	}
+	.m-label {
+		font-size: 0.75rem;
+		line-height: 1.3;
+		letter-spacing: 0.06em;
+		font-weight: 500;
+	}
+	.m-data {
+		font-size: 0.8125rem;
+		line-height: 1.4;
+		font-weight: 400;
+	}
+	.m-note {
+		font-size: 0.75rem;
+		line-height: 1.45;
+		font-weight: 400;
+		color: var(--ink-3);
+	}
+	.m-button {
+		font-size: 0.75rem;
+		line-height: 1;
+		letter-spacing: 0.08em;
+		font-weight: 500;
+		text-transform: uppercase;
+	}
+
+	/* Cyrillic sets larger and wider than Latin at the same nominal size.
+	   11px with Kazakh diacritics is not legible, and 0.14em tracking was
+	   tuned for PROJECTS, not ИНФРАСТРУКТУРА. */
+	:lang(kk),
+	:lang(ru) {
+		--m-eyebrow-size: 0.75rem;
+		--m-eyebrow-track: 0.1em;
+	}
+	:lang(kk) .d1,
+	:lang(ru) .d1 {
+		font-size: clamp(2.25rem, 5.4vw, 4.75rem);
+	}
+	:lang(kk) .d2,
+	:lang(ru) .d2 {
+		font-size: clamp(1.75rem, 3.1vw, 3rem);
+		line-height: 0.99;
+	}
+
+	/* The eyebrow grammar: NN — WORD. Descended from QAIRU's own numbered
+	   section labels. Never centred, never with an icon. */
+	.eyebrow {
+		display: flex;
+		align-items: baseline;
+		gap: 0.5rem;
+	}
+	.eyebrow__n {
+		opacity: 0.72; /* one step dimmer than the label, but never below 4.5:1 */
+	}
+	/* Riding a section hairline, with the rule cut behind it. Forbidden over the
+	   plate, over --paper-2, and inside any full-bleed block. */
+	.eyebrow--on-rule {
+		background: var(--paper);
+		padding-inline-end: 0.75rem;
+	}
+}
+
+/* ─────────────────────────────────────────────────────────── shell ─── */
+
+@layer components {
+	/*
+	 * The rail's border-inline-end IS the spine. There is no fixed-position
+	 * spine element — one fewer stacking context, and no sticky interaction bugs.
+	 * Every rule on the page starts at the spine; none crosses left of it.
+	 */
+	.page {
+		max-inline-size: var(--shell-max);
+		margin-inline: auto;
+		padding-inline: var(--pad);
+	}
+
+	.grid {
+		display: grid;
+		grid-template-columns: var(--rail) repeat(12, minmax(0, 1fr));
+		column-gap: var(--gutter);
+	}
+
+	.rail {
+		grid-column: 1;
+		border-inline-end: 1px solid var(--rule);
+		padding-inline-end: 0.75rem;
+		text-align: end;
+	}
+
+	/* The well: the 12 content columns. Content never starts at the true left
+	   edge, and nothing on this site is ever centred. */
+	.well {
+		grid-column: 2 / -1;
+	}
+
+	/* Asymmetry is non-negotiable: never 6/6. Splits are 7/5, 8/4 or 9/3, with
+	   one genuinely empty column between, carrying a hairline. */
+	.col-lead {
+		grid-column: 2 / span 7;
+	}
+	.col-gap {
+		grid-column: 9;
+		border-inline-end: 1px solid var(--rule);
+	}
+	.col-aside {
+		grid-column: 10 / span 4;
+	}
+
+	@media (width < 1024px) {
+		.grid {
+			grid-template-columns: var(--rail) repeat(8, minmax(0, 1fr));
+		}
+		.col-lead {
+			grid-column: 2 / span 5;
+		}
+		.col-gap {
+			display: none;
+		}
+		.col-aside {
+			grid-column: 7 / span 3;
+		}
+	}
+
+	/* Below 768px the rail is off and everything is one column. This is the
+	   state most visitors see, so it is designed rather than inherited. */
+	@media (width < 768px) {
+		.grid {
+			grid-template-columns: minmax(0, 1fr);
+			column-gap: 0;
+		}
+		.rail {
+			display: none;
+		}
+		.well,
+		.col-lead,
+		.col-aside {
+			grid-column: 1;
+		}
+		.col-gap {
+			display: none;
+		}
+	}
+
+	.section {
+		padding-block: var(--section-pad);
+		border-block-start: 1px solid var(--rule);
+	}
+	.section--open {
+		border-block-start: 0;
+	}
+	.rule-2 {
+		border-block-start: 2px solid var(--rule-2);
+	}
+
+	/* Exactly one block per page breaks the well and runs to the right viewport
+	   edge. Never bleeds left: the spine holds that side. */
+	.bleed-right {
+		/*
+		 * The shell is centred and padded, so reaching the viewport edge means
+		 * undoing both: the padding, plus half of whatever the viewport has
+		 * spare beyond the shell's max width.
+		 */
+		margin-inline-end: calc(-1 * (var(--pad) + max(0px, (100vw - var(--shell-max)) / 2)));
+	}
+	@media (width < 768px) {
+		.bleed-right {
+			margin-inline: calc(50% - 50vw);
+			padding-inline: var(--pad);
+		}
+	}
+
+	.rail__numeral {
+		position: sticky;
+		inset-block-start: 1.5rem;
+	}
+	@media (width < 768px) {
+		/* The numeral moves inline above each section head. */
+		.rail__numeral {
+			position: static;
+		}
+	}
+}
+
+/* ──────────────────────────────────────────── register: THE RECORD ─── */
+
+@layer components {
+	/*
+	 * Dense hairline rows. A row is separated by a rule and nothing else —
+	 * never given padding, a border and a radius at once. That combination is
+	 * a card, and cards are how this design dies. See docs/DESIGN.md §16.
+	 */
+	.record {
+		border-block-start: 1px solid var(--rule);
+	}
+
+	.record__row {
+		display: grid;
+		grid-template-columns: subgrid;
+		grid-column: 1 / -1;
+		align-items: start;
+		gap: 0.75rem var(--gutter);
+		min-block-size: 44px; /* every hit target ≥44px — a site, not a console */
+		padding-block: 1.25rem;
+		border-block-end: 1px solid var(--rule);
+		transition: background-color var(--t-fast) var(--ease-out);
+	}
+
+	.record__row:hover {
+		background: var(--paper-2);
+	}
+
+	.record__title {
+		font-family: var(--font-display);
+		font-size: 1.375rem;
+		line-height: 1.15;
+		letter-spacing: -0.01em;
+		font-weight: 600;
+	}
+
+	.record__meta {
+		color: var(--ink-3);
+	}
+
+	/* A state token always carries a word. Colour is never the only carrier. */
+	.state {
+		display: inline-block;
+		padding: 0.25rem 0.5rem;
+		border: 1px solid var(--rule-strong);
+		border-radius: var(--radius-inline);
+		color: var(--ink-3);
+		white-space: nowrap;
+	}
+
+	/* Actionable now — the one state that earns the signal colour. */
+	.state--live {
+		color: var(--cobalt-text);
+		border-color: var(--cobalt);
+	}
+
+	/* Below 768px a row becomes a slip: three lines, hairline-separated, with
+	   no padding-border-radius combination anywhere near it. */
+	@media (width < 768px) {
+		.record__row {
+			display: block;
+			padding-block: 1rem;
+		}
+	}
+}
+
+/* ───────────────────────────────────────────── register: THE PLATE ─── */
+
+@layer components {
+	/*
+	 * Documentary photography at compositional scale. Mandatory: exactly one
+	 * per page. This is the parent brand's defining trait, and the site's only
+	 * source of colour. Full colour at rest — never greyscale-until-hover,
+	 * which is invisible on touch and removes all warmth from the resting page.
+	 */
+	.plate {
+		border: 1px solid var(--rule-strong);
+		border-radius: var(--radius-0);
+		background: var(--paper-2);
+	}
+
+	.plate img {
+		inline-size: 100%;
+		block-size: auto;
+		aspect-ratio: 16 / 9;
+		object-fit: cover;
+	}
+
+	.plate figcaption {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem 1rem;
+		justify-content: space-between;
+		padding: 0.75rem 1rem;
+		border-block-start: 1px solid var(--rule);
+		color: var(--ink-3);
+	}
+}
+
+/* ────────────────────────────────────────────── controls and forms ─── */
+
+@layer components {
+	/*
+	 * One .cta-primary per page, maximum. It is the only solid cobalt fill on
+	 * the site besides ::selection and the 2px active-nav underline.
+	 */
+	.cta-primary {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		min-block-size: 44px;
+		padding-inline: 1.25rem;
+		background: var(--cobalt);
+		color: var(--on-cobalt);
+		border: 1px solid var(--cobalt);
+		border-radius: var(--radius-control);
+		text-decoration: none;
+		cursor: pointer;
+		transition: filter var(--t-fast) var(--ease-out);
+	}
+
+	/* Darkens only. No lift, no shadow, no scale. */
+	.cta-primary:hover {
+		filter: brightness(0.92);
+	}
+
+	.btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		min-block-size: 44px;
+		padding-inline: 1.25rem;
+		background: transparent;
+		color: var(--ink-1);
+		border: 1px solid var(--rule-strong);
+		border-radius: var(--radius-control);
+		text-decoration: none;
+		cursor: pointer;
+		transition:
+			border-color var(--t-fast) var(--ease-out),
+			background-color var(--t-fast) var(--ease-out);
+	}
+
+	.btn:hover {
+		background: var(--paper-2);
+		border-color: var(--ink-3);
+	}
+
+	.btn:disabled,
+	.cta-primary:disabled {
+		opacity: 0.55;
+		cursor: not-allowed;
+	}
+
+	/* An action link: mono, uppercase, with an arrow that does not animate. */
+	.link-action {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		text-decoration: none;
+		border-block-end: 1px solid var(--rule-strong);
+		padding-block-end: 2px;
+	}
+	.link-action:hover {
+		border-block-end-color: var(--cobalt);
+	}
+
+	.field {
+		display: block;
+	}
+
+	.field__label {
+		display: block;
+		margin-block-end: 0.375rem;
+		color: var(--ink-2);
+	}
+
+	/*
+	 * A 1px border is the only boundary of an input, so it must be
+	 * --rule-strong: 3:1 against the ground, per WCAG 1.4.11.
+	 */
+	.field__input {
+		inline-size: 100%;
+		min-block-size: 44px;
+		padding: 0.625rem 0.75rem;
+		background: transparent;
+		border: 1px solid var(--rule-strong);
+		border-radius: var(--radius-control);
+		color: var(--ink-1);
+		transition: border-color var(--t-fast) var(--ease-out);
+	}
+
+	.field__input::placeholder {
+		color: var(--ink-4);
+	}
+
+	.field__input:hover {
+		border-color: var(--ink-3);
+	}
+
+	textarea.field__input {
+		min-block-size: 8rem;
+		resize: vertical;
+		line-height: 1.6;
+	}
+
+	/* Errors use --danger, never cobalt: the signal colour means "live", and an
+	   error is not an invitation. */
+	.field__input[aria-invalid="true"] {
+		border-color: var(--danger);
+	}
+
+	.field__error {
+		display: block;
+		margin-block-start: 0.375rem;
+		color: var(--danger);
+	}
+
+	/* The honeypot. Off-screen rather than display:none, so bots that skip
+	   hidden fields still fill it, and never focusable or announced. */
+	.honeypot {
+		position: absolute;
+		inline-size: 1px;
+		block-size: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+
+	.skip-link {
+		position: absolute;
+		inset-block-start: -100%;
+		inset-inline-start: var(--pad);
+		z-index: 10;
+		padding: 0.75rem 1rem;
+		background: var(--paper);
+		border: 1px solid var(--rule-strong);
+	}
+	.skip-link:focus {
+		inset-block-start: 0.5rem;
+	}
+
+	.visually-hidden {
+		position: absolute;
+		inline-size: 1px;
+		block-size: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+}
+
+/* ──────────────────────────────────────────────────── page furniture ─── */
+
+@layer components {
+	/*
+	 * The split wordmark: two weights, one word, no cobalt ever.
+	 *
+	 * Colour is inherited, never pinned to --ink-1. The colophon inverts the
+	 * ground, and a pinned ink colour would paint the first half of the word in
+	 * the footer's own background — invisible.
+	 */
+	.wordmark {
+		font-family: var(--font-display);
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		text-decoration: none;
+		color: inherit;
+	}
+	.wordmark em {
+		font-style: normal;
+		font-weight: 500;
+		opacity: 0.62; /* relative, so it survives inversion */
+	}
+
+	.masthead {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem 1.5rem;
+		align-items: center;
+		justify-content: space-between;
+		min-block-size: 32px;
+		padding-block: 0.5rem;
+		border-block-end: 1px solid var(--rule);
+		color: var(--ink-3);
+	}
+
+	.nav__link {
+		text-decoration: none;
+		padding-block-end: 4px;
+		border-block-end: 2px solid transparent;
+		color: var(--ink-2);
+	}
+	.nav__link:hover {
+		color: var(--ink-1);
+	}
+	/* The 2px active underline is a rule doing data work — one of the three
+	   permitted cobalt fills. */
+	.nav__link[aria-current] {
+		color: var(--ink-1);
+		border-block-end-color: var(--cobalt);
+	}
+
+	/*
+	 * The colophon inverts: the footer is the parent brand's own polarity.
+	 * No dark developer site ends on white, which is exactly the point.
+	 */
+	.colophon {
+		background: var(--ink-1);
+		color: var(--paper);
+	}
+	.colophon a {
+		color: var(--paper);
+		text-decoration-color: color-mix(in oklch, var(--paper) 45%, transparent);
+	}
+	.colophon a:hover,
+	.colophon a:focus-visible {
+		text-decoration-color: var(--paper);
+	}
+	.colophon :focus-visible {
+		outline-color: var(--paper);
+	}
+
+	/*
+	 * The margin change-bar: a 1px tick beside anything modified in the last
+	 * seven days. Lifted from the revision bar of a printed legal instrument.
+	 * The one editorial, non-interactive use of the signal colour — it carries
+	 * provenance, which is data.
+	 */
+	.change-bar {
+		display: inline-block;
+		inline-size: 1px;
+		block-size: 12px;
+		background: var(--cobalt);
+	}
+	@media (width < 768px) {
+		.change-bar {
+			block-size: 12px;
+			margin-inline-end: 0.5rem;
+			vertical-align: middle;
+		}
+	}
+}
+
+/* ──────────────────────────────────────────────────────────── motion ─── */
+
+@layer components {
+	/*
+	 * The press run: rules first, then type. The page assembles the way a sheet
+	 * is printed. Nothing bounces, scales, loops, or travels more than 8px.
+	 *
+	 * The nameplate translates but never fades — opacity stays 1 so the LCP
+	 * text paints on the first frame.
+	 */
+	@media (prefers-reduced-motion: no-preference) {
+		.run-rule {
+			animation: run-rule var(--t-rule) var(--ease-out) both;
+			transform-origin: left center;
+		}
+		.run-type {
+			animation: run-type var(--t-base) var(--ease-out) both;
+			animation-delay: 100ms;
+		}
+		.run-rows > * {
+			animation: run-rows 180ms ease-out both;
+			animation-delay: calc(160ms + var(--i, 0) * 24ms);
+		}
+	}
+
+	@keyframes run-rule {
+		from {
+			transform: scaleX(0);
+		}
+		to {
+			transform: scaleX(1);
+		}
+	}
+	@keyframes run-type {
+		from {
+			transform: translateY(8px);
+		}
+		to {
+			transform: translateY(0);
+		}
+	}
+	@keyframes run-rows {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+}

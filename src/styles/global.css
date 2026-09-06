@@ -1,1 +1,279 @@
 @import "tailwindcss";
+@import "./components.css";
+
+/*
+ * QairuHub — NIGHT EDITION
+ *
+ * Tokens and the component layer. docs/DESIGN.md is the specification; if this
+ * file and that document disagree, this file is wrong.
+ *
+ * Two rules govern everything here:
+ *   1. No component ever hardcodes a colour, a radius or a rule weight.
+ *   2. Cobalt is ink for the live layer only. See §8 and scripts/check-cobalt.mjs.
+ */
+
+/* Theme is three-state: explicit dark, explicit light, and system default. */
+@custom-variant dark (&:where(:root:not([data-theme="light"]) *, [data-theme="dark"] *));
+
+/* ───────────────────────────────────────────────────────────── tokens ─── */
+
+:root {
+	/* ── Ground. Warm, hue 85, near-zero chroma. A neutral blue-black would let
+	   cobalt sink into it; the warmth is what keeps the signal legible. ── */
+	--paper: oklch(0.145 0.004 85);
+	--paper-2: oklch(0.185 0.005 85);
+
+	/* ── Ink ramp. Contrast ratios are against --paper, computed not estimated. ── */
+	--ink-1: oklch(0.955 0.004 85); /* 17.4:1  primary text            */
+	--ink-2: oklch(0.8 0.005 85); /* 10.6:1  secondary text          */
+	--ink-3: oklch(0.685 0.006 85); /*  7.0:1  meta, eyebrows          */
+	--ink-4: oklch(0.55 0.006 85); /*  4.1:1  ≥24px ONLY              */
+
+	/* ── Rules. --rule is decorative; --rule-strong is the only one allowed to
+	   be the sole boundary of an interactive control (WCAG 1.4.11, 3:1). ── */
+	--rule: oklch(0.32 0.006 85); /* 1.6:1 */
+	--rule-2: oklch(0.4 0.006 85); /* 2.2:1 */
+	--rule-strong: oklch(0.5 0.006 85); /* 3.3:1 */
+
+	/* ── Signal. ── */
+	--cobalt: oklch(0.62 0.2 255); /* 5.4:1  fills, 2px rules, focus  */
+	--cobalt-text: oklch(0.74 0.16 255); /* 8.4:1  REQUIRED ≤13px and 1px    */
+	--on-cobalt: oklch(0.16 0 0); /* 5.2:1  white on cobalt is 3.7:1 */
+	--danger: oklch(0.7 0.17 25); /* 6.9:1  errors only              */
+
+	/* ── Type. Astro's font API supplies the family variables. ── */
+	--font-display: var(--font-display-latin);
+	--font-sans: var(--font-sans-base);
+	--font-mono: var(--font-mono-base);
+
+	/* ── Geometry. Base unit 4px. Radius has exactly three jobs; the 6px
+	   ceiling exists so nothing can exceed it, and is used by nothing. ── */
+	--radius-0: 0; /* every container: rows, tables, plates, sections */
+	--radius-inline: 2px; /* inline mono tokens, tags, chips                */
+	--radius-control: 4px; /* inputs, buttons                                */
+	--radius-max: 6px;
+
+	--rail: 96px;
+	--gutter: 24px;
+	--pad: 32px;
+	--section-pad: 96px;
+	--shell-max: 1440px;
+
+	/* ── Motion. Nothing travels more than 8px, nothing scales, nothing loops. ── */
+	--ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+	--t-fast: 120ms;
+	--t-base: 220ms;
+	--t-rule: 240ms;
+}
+
+/* Light — QAIRU's own polarity. Not a courtesy toggle: a component that only
+   works in dark is a bug, not a variant. */
+@media (prefers-color-scheme: light) {
+	:root:not([data-theme="dark"]) {
+		--paper: oklch(0.985 0.003 85);
+		--paper-2: oklch(0.955 0.004 85);
+		--ink-1: oklch(0.2 0.01 85);
+		--ink-2: oklch(0.42 0.01 85);
+		--ink-3: oklch(0.52 0.01 85);
+		--ink-4: oklch(0.62 0.01 85);
+		--rule: oklch(0.84 0.008 85);
+		--rule-2: oklch(0.74 0.008 85);
+		--rule-strong: oklch(0.65 0.008 85);
+		--cobalt: oklch(0.5 0.2 255);
+		--cobalt-text: oklch(0.5 0.2 255); /* small text darkens, it does not lift */
+		--on-cobalt: oklch(1 0 0);
+		--danger: oklch(0.5 0.2 25);
+	}
+}
+
+:root[data-theme="light"] {
+	--paper: oklch(0.985 0.003 85);
+	--paper-2: oklch(0.955 0.004 85);
+	--ink-1: oklch(0.2 0.01 85);
+	--ink-2: oklch(0.42 0.01 85);
+	--ink-3: oklch(0.52 0.01 85);
+	--ink-4: oklch(0.62 0.01 85);
+	--rule: oklch(0.84 0.008 85);
+	--rule-2: oklch(0.74 0.008 85);
+	--rule-strong: oklch(0.65 0.008 85);
+	--cobalt: oklch(0.5 0.2 255);
+	--cobalt-text: oklch(0.5 0.2 255);
+	--on-cobalt: oklch(1 0 0);
+	--danger: oklch(0.5 0.2 25);
+}
+
+@media (prefers-contrast: more) {
+	:root {
+		--rule: oklch(0.44 0.006 85);
+		--rule-2: oklch(0.56 0.006 85);
+	}
+}
+
+/* Breakpoints change the shell's proportions, not its structure. */
+@media (width < 1280px) {
+	:root {
+		--rail: 72px;
+		--gutter: 20px;
+		--pad: 28px;
+		--section-pad: 80px;
+	}
+}
+@media (width < 1024px) {
+	:root {
+		--rail: 48px;
+		--pad: 24px;
+		--section-pad: 64px;
+	}
+}
+@media (width < 768px) {
+	:root {
+		--rail: 0px;
+		--gutter: 16px;
+		--pad: 20px;
+		--section-pad: 48px;
+	}
+}
+
+/* Expose the tokens Tailwind should generate utilities from. */
+@theme inline {
+	--color-paper: var(--paper);
+	--color-paper-2: var(--paper-2);
+	--color-ink-1: var(--ink-1);
+	--color-ink-2: var(--ink-2);
+	--color-ink-3: var(--ink-3);
+	--color-ink-4: var(--ink-4);
+	--color-rule: var(--rule);
+	--color-rule-2: var(--rule-2);
+	--color-rule-strong: var(--rule-strong);
+	--color-danger: var(--danger);
+
+	--radius-none: var(--radius-0);
+	--radius-inline: var(--radius-inline);
+	--radius-control: var(--radius-control);
+}
+
+/* ─────────────────────────────────────────────────────────────── base ─── */
+
+@layer base {
+	*,
+	*::before,
+	*::after {
+		box-sizing: border-box;
+	}
+
+	html {
+		/* Both themes exist, so tell the UA and let form controls follow. */
+		color-scheme: dark light;
+		-webkit-text-size-adjust: 100%;
+	}
+
+	body {
+		margin: 0;
+		background: var(--paper);
+		color: var(--ink-1);
+		font-family: var(--font-sans);
+		font-size: 1rem;
+		line-height: 1.6;
+		font-weight: 400;
+		-webkit-font-smoothing: antialiased;
+		text-rendering: optimizeLegibility;
+	}
+
+	/* Figures must align in a column: the registry and the diary depend on it. */
+	.mono,
+	th,
+	td,
+	time,
+	[data-tabular] {
+		font-variant-numeric: tabular-nums;
+	}
+
+	h1,
+	h2,
+	h3,
+	h4 {
+		font-family: var(--font-display);
+		font-weight: 600;
+		margin: 0;
+		text-wrap: balance;
+	}
+
+	p {
+		margin: 0;
+		text-wrap: pretty;
+	}
+
+	ul,
+	ol {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	img,
+	picture,
+	svg,
+	video {
+		display: block;
+		max-inline-size: 100%;
+	}
+
+	/* Underlines were always there; only the colour changes on interaction. */
+	a {
+		color: inherit;
+		text-decoration: underline;
+		text-decoration-color: var(--ink-3);
+		text-decoration-thickness: 1px;
+		text-underline-offset: 2px;
+		transition:
+			text-decoration-color var(--t-fast) var(--ease-out),
+			text-underline-offset var(--t-fast) var(--ease-out);
+	}
+
+	a:hover,
+	a:focus-visible {
+		text-decoration-color: var(--cobalt-text);
+		text-underline-offset: 3px;
+	}
+
+	/* On every focusable element, in both themes, without exception. */
+	:focus-visible {
+		outline: 2px solid var(--cobalt);
+		outline-offset: 3px;
+		border-radius: 1px;
+	}
+
+	::selection {
+		background: var(--cobalt);
+		color: var(--on-cobalt);
+	}
+
+	button,
+	input,
+	select,
+	textarea {
+		font: inherit;
+		color: inherit;
+	}
+
+	hr {
+		border: 0;
+		border-block-start: 1px solid var(--rule);
+		margin: 0;
+	}
+
+	/*
+	 * Reduced motion is architectural, not a patch: the page must be complete
+	 * and correct with every transition removed, never mid-animation.
+	 */
+	@media (prefers-reduced-motion: reduce) {
+		*,
+		*::before,
+		*::after {
+			animation-duration: 0.01ms !important;
+			animation-iteration-count: 1 !important;
+			transition-duration: 0.01ms !important;
+			scroll-behavior: auto !important;
+		}
+	}
+}

@@ -1,10 +1,6 @@
 {
 	"$schema": "https://biomejs.dev/schemas/2.5.12/schema.json",
-	"vcs": {
-		"enabled": true,
-		"clientKind": "git",
-		"useIgnoreFile": true
-	},
+	"vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
 	"files": {
 		"includes": [
 			"**",
@@ -17,7 +13,8 @@
 			"!**/test-results",
 			"!**/playwright-report",
 			"!**/public",
-			"!**/*.svg"
+			"!**/*.svg",
+			"!**/.shots"
 		]
 	},
 	"formatter": {
@@ -33,45 +30,50 @@
 			"preset": "recommended",
 			"suspicious": {
 				"noExplicitAny": "error",
-				"noConsole": {
-					"level": "warn",
-					"options": {
-						"allow": ["warn", "error"]
-					}
-				}
+				"noConsole": { "level": "warn", "options": { "allow": ["warn", "error"] } }
 			},
-			"correctness": {
-				"noUnusedImports": "error",
-				"noUnusedVariables": "error"
-			},
-			"style": {
-				"useConst": "error",
-				"noNonNullAssertion": "warn",
-				"useImportType": "error"
-			},
-			"a11y": {
-				"preset": "recommended"
-			}
+			"correctness": { "noUnusedImports": "error", "noUnusedVariables": "error" },
+			"style": { "useConst": "error", "noNonNullAssertion": "warn", "useImportType": "error" },
+			"a11y": { "preset": "recommended" }
 		}
 	},
 	"javascript": {
-		"formatter": {
-			"quoteStyle": "single",
-			"semicolons": "asNeeded",
-			"trailingCommas": "all"
+		"formatter": { "quoteStyle": "single", "semicolons": "asNeeded", "trailingCommas": "all" }
+	},
+	"json": { "formatter": { "trailingCommas": "none" } },
+	"css": {
+		"parser": {
+			"tailwindDirectives": true
 		}
 	},
-	"json": {
-		"formatter": {
-			"trailingCommas": "none"
-		}
-	},
-	"assist": {
-		"enabled": true,
-		"actions": {
-			"source": {
-				"organizeImports": "on"
+	"assist": { "enabled": true, "actions": { "source": { "organizeImports": "on" } } },
+	"overrides": [
+		{
+			"includes": ["**/*.astro"],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"noUnusedVariables": "off",
+						"noUnusedImports": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["scripts/**"],
+			"linter": {
+				"rules": {
+					"suspicious": { "noConsole": "off" }
+				}
+			}
+		},
+		{
+			"includes": ["src/styles/**"],
+			"linter": {
+				"rules": {
+					"complexity": { "noImportantStyles": "off" }
+				}
 			}
 		}
-	}
+	]
 }

@@ -3,6 +3,8 @@ name: Qairu AI
 tagline: Hands-on AI building — agents, model tinkering, and AI Fridays deep dives.
 order: 1
 status: active
+commitment: 2 hours a week
+requirements: Any faculty. No machine-learning experience needed.
 unit: qairu-ai
 outcomes:
   - Weekly AI Fridays sessions with written notes published on /learn

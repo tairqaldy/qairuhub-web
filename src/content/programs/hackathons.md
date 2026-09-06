@@ -3,6 +3,8 @@ name: Qairu Hackathons
 tagline: Regular build sprints. Ship a working demo in a weekend.
 order: 2
 status: active
+commitment: One weekend per sprint
+requirements: Any faculty. Teams form on the day.
 unit: hackathons
 outcomes:
   - Weekend sprints ending in live demos

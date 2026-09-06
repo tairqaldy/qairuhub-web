@@ -1,0 +1,88 @@
+---
+import { Image } from 'astro:assets'
+import type { CollectionEntry } from 'astro:content'
+
+interface Props {
+	people: CollectionEntry<'people'>[]
+}
+
+const { people } = Astro.props
+---
+
+{/*
+  Faces at rest, in full colour — not revealed on hover. A hover-only portrait
+  is invisible on touch, which is most of this audience, and a page of grey
+  rectangles is exactly the coldness this section exists to fix.
+*/}
+<ul class="strip">
+	{people.map((person) => (
+		<li class="strip__item">
+			<a class="strip__link" href={`/people#${person.id}`}>
+				{person.data.avatar ? (
+					<Image
+						class="strip__portrait"
+						src={person.data.avatar}
+						alt=""
+						width={112}
+						height={144}
+						loading="lazy"
+					/>
+				) : (
+					<span class="strip__portrait strip__portrait--empty" aria-hidden="true"></span>
+				)}
+				<span class="strip__name">{person.data.name}</span>
+				<span class="m-label strip__role">{person.data.role}</span>
+			</a>
+		</li>
+	))}
+</ul>
+
+<style>
+	.strip {
+		display: grid;
+		grid-template-columns: repeat(6, minmax(0, 1fr));
+		gap: var(--gutter);
+	}
+
+	.strip__link {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		text-decoration: none;
+	}
+
+	.strip__portrait {
+		inline-size: 100%;
+		block-size: auto;
+		aspect-ratio: 56 / 72;
+		object-fit: cover;
+		border: 1px solid var(--rule-strong);
+		border-radius: var(--radius-none, 0);
+	}
+
+	/* No photograph yet: a ruled frame, never a silhouette or an initial-avatar. */
+	.strip__portrait--empty {
+		display: block;
+		background: var(--paper-2);
+	}
+
+	.strip__name {
+		font-weight: 500;
+	}
+
+	.strip__role {
+		color: var(--ink-3);
+	}
+
+	@media (width < 1024px) {
+		.strip {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+		}
+	}
+
+	@media (width < 560px) {
+		.strip {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+</style>

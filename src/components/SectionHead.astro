@@ -1,0 +1,74 @@
+---
+interface Props {
+	/** Two-digit ordinal. Must match the rail numeral and the nav. */
+	n: string
+	label: string
+	/** When given, the head carries a trailing link to the full index. */
+	href?: string
+	/** Optional one-line standfirst beneath the head. */
+	standfirst?: string
+}
+
+const { n, label, href, standfirst } = Astro.props
+---
+
+<div class="head">
+	<h2 class="d3 head__title">{label}</h2>
+
+	<p class="eyebrow m-eyebrow head__eyebrow">
+		<span class="eyebrow__n">{n}</span>
+		<span aria-hidden="true">—</span>
+		<span>{label}</span>
+	</p>
+
+	{href && (
+		<a class="link-action m-button head__more" href={href}>
+			All {label.toLowerCase()} <span aria-hidden="true">→</span>
+		</a>
+	)}
+
+	{standfirst && <p class="body head__standfirst">{standfirst}</p>}
+</div>
+
+<style>
+	.head {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		align-items: baseline;
+		gap: 0.75rem 1.5rem;
+		margin-block-end: 2rem;
+	}
+
+	/* The eyebrow repeats the label for the numbering grammar, so the visible
+	   duplicate is hidden from assistive tech rather than read twice. */
+	.head__eyebrow {
+		grid-row: 1;
+		grid-column: 1;
+		order: -1;
+	}
+
+	.head__title {
+		grid-column: 1;
+	}
+
+	.head__more {
+		grid-column: 2;
+		grid-row: 2;
+	}
+
+	.head__standfirst {
+		grid-column: 1 / -1;
+		color: var(--ink-2);
+	}
+
+	@media (width < 768px) {
+		.head {
+			grid-template-columns: 1fr;
+		}
+		.head__more {
+			grid-column: 1;
+			grid-row: auto;
+			justify-self: start;
+		}
+	}
+</style>

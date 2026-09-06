@@ -3,6 +3,8 @@ name: Education & Peer Learning
 tagline: Study groups, guides, and peer code review — students teaching students.
 order: 4
 status: active
+commitment: 1-2 hours a week
+requirements: Open to anyone who wants to teach or learn.
 unit: education
 outcomes:
   - Published guides and reading lists on /learn

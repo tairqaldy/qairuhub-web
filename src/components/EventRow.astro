@@ -1,0 +1,120 @@
+---
+import type { CollectionEntry } from 'astro:content'
+import { formatTime, isRecentlyChanged } from '../lib/site'
+
+interface Props {
+	event: CollectionEntry<'events'>
+}
+
+const { event } = Astro.props
+const { data } = event
+
+/**
+ * A diary row. The date sits at display size as a figure, the way a printed
+ * diary sets it — day large, month beneath.
+ */
+const day = new Intl.DateTimeFormat('en-GB', { day: '2-digit', timeZone: 'Asia/Almaty' }).format(
+	data.starts,
+)
+const month = new Intl.DateTimeFormat('en-GB', { month: 'short', timeZone: 'Asia/Almaty' })
+	.format(data.starts)
+	.toUpperCase()
+
+const changed = isRecentlyChanged(data.updatedDate)
+const where = data.room ? `${data.location} · ${data.room}` : data.location
+---
+
+<article class="row">
+	<div class="row__date">
+		<span class="dn row__day" aria-hidden="true">{day}</span>
+		<span class="m-label row__month" aria-hidden="true">{month}</span>
+		<time class="visually-hidden" datetime={data.starts.toISOString()}>
+			{data.starts.toISOString()}
+		</time>
+	</div>
+
+	<div class="row__main">
+		<h3 class="record__title">
+			<a href={`/events/${event.id}`}>{data.title}</a>
+		</h3>
+		<p class="m-data row__meta">
+			{changed && <span class="change-bar" aria-hidden="true"></span>}
+			{formatTime(data.starts)} · {where}
+		</p>
+		<p class="body row__summary">{data.summary}</p>
+	</div>
+
+	<div class="row__action">
+		{data.walkIn ? (
+			<span class="state m-label state--live">Walk in — no application</span>
+		) : (
+			<span class="state m-label">RSVP needed</span>
+		)}
+		<a class="link-action m-button" href={`/events/${event.id}`}>
+			Details <span aria-hidden="true">→</span>
+		</a>
+	</div>
+</article>
+
+<style>
+	.row {
+		display: grid;
+		grid-template-columns: 88px 1fr auto;
+		gap: 1rem var(--gutter);
+		align-items: start;
+		padding-block: 1.5rem;
+		border-block-end: 1px solid var(--rule);
+		transition: background-color var(--t-fast) var(--ease-out);
+	}
+
+	.row:hover {
+		background: var(--paper-2);
+	}
+
+	.row__date {
+		display: flex;
+		flex-direction: column;
+		align-items: start;
+		line-height: 1;
+	}
+
+	.row__month {
+		color: var(--ink-4);
+		margin-block-start: 0.25rem;
+	}
+
+	.row__meta {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-block-start: 0.4rem;
+		color: var(--ink-3);
+	}
+
+	.row__summary {
+		margin-block-start: 0.6rem;
+		color: var(--ink-2);
+	}
+
+	.row__action {
+		display: flex;
+		flex-direction: column;
+		align-items: start;
+		gap: 0.75rem;
+	}
+
+	@media (width < 768px) {
+		.row {
+			grid-template-columns: 1fr;
+			padding-block: 1.25rem;
+		}
+		.row__date {
+			flex-direction: row;
+			align-items: baseline;
+			gap: 0.5rem;
+		}
+		.row__day {
+			font-size: 1.75rem;
+		}
+	}
+</style>

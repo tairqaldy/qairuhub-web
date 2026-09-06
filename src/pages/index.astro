@@ -1,17 +1,282 @@
 ---
+import Desk from '../components/Desk.astro'
+import EmptyState from '../components/EmptyState.astro'
+import EventRow from '../components/EventRow.astro'
+import LearnRow from '../components/LearnRow.astro'
+import PeopleStrip from '../components/PeopleStrip.astro'
+import Plate from '../components/Plate.astro'
+import ProgramRow from '../components/ProgramRow.astro'
+import ProjectRow from '../components/ProjectRow.astro'
+import SectionHead from '../components/SectionHead.astro'
+import Base from '../layouts/Base.astro'
+import {
+	getFeaturedProjects,
+	getLearnEntries,
+	getPeople,
+	getPrograms,
+	getUpcomingEvents,
+} from '../lib/content'
+import { SITE } from '../lib/site'
 
+const [programs, events, projects, notes, people] = await Promise.all([
+	getPrograms(),
+	getUpcomingEvents(),
+	getFeaturedProjects(6),
+	getLearnEntries(),
+	getPeople(),
+])
+
+const nextEvent = events[0]
+const latestProject = projects[0]
+const latestNote = notes[0]
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Base title={SITE.name}>
+	{/*
+	  §3 — THE FOLD, split 7 / 1 / 4.
+
+	  Never 6/6, and the empty ninth column is not a gap: it carries a hairline,
+	  so the page breathes on a line rather than on air.
+	*/}
+	<section class="grid fold">
+		{/* The lead carries no numeral: numbering starts at the first named section. */}
+		<div class="rail" aria-hidden="true"></div>
+
+		<div class="col-lead">
+			{/*
+			  The deck names a concrete, dated fact — not a manifesto. Lines are
+			  authored, never machine-wrapped.
+			*/}
+			<p class="d2 fold__deck run-type">
+				<span>Applications are open.</span>
+				<span>Anyone can walk into a Friday session.</span>
+			</p>
+
+			<p class="lead fold__standing">
+				QairuHub is the student-run builder community at {SITE.university.name} in Astana. We
+				meet weekly to build with AI — agents, models, and the tools around them — and we
+				publish what we learn. No prior machine-learning experience is required, and no
+				faculty is excluded. If you can turn up on a Friday, you can start here.
+			</p>
+
+			<a class="link-action m-button" href="/about">
+				What we actually do <span aria-hidden="true">→</span>
+			</a>
+
+			{/*
+			  The numbered step list is the parent brand's own device (01/02/03/04),
+			  and it answers the question the deck raises: what actually happens if
+			  I turn up. It also gives the lead column real weight against the desk,
+			  so the fold is a composition rather than one tall column beside a void.
+			*/}
+			<ol class="steps">
+				{
+					[
+						{
+							title: 'Come to a Friday',
+							body: 'Two hours, open to anyone at QAIRU. Bring a laptop. You do not need to know anything first.',
+						},
+						{
+							title: 'Build something small',
+							body: 'Pick a project or join one. The point is a working thing, not a finished one.',
+						},
+						{
+							title: 'Show it',
+							body: 'Demo at a sprint. It goes into the registry with your name on it.',
+						},
+						{
+							title: 'Take it further',
+							body: 'Some projects turn into real products. That is what the accelerator is for.',
+						},
+					].map((step, i) => (
+						<li class="steps__item">
+							<span class="m-eyebrow steps__n" aria-hidden="true">
+								{String(i + 1).padStart(2, '0')}
+							</span>
+							<div>
+								<p class="steps__title">{step.title}</p>
+								<p class="small steps__body">{step.body}</p>
+							</div>
+						</li>
+					))
+				}
+			</ol>
+		</div>
+
+		<div class="col-gap" aria-hidden="true"></div>
+
+		<div class="col-aside">
+			<Desk event={nextEvent} project={latestProject} note={latestNote} />
+		</div>
+	</section>
+
+	{/*
+	  §4 — THE PLATE. The page's single grid-break and its only source of colour.
+	  Exactly one per page, and never optional.
+	*/}
+	<Plate />
+
+	{/* §5 — 01 PROGRAMMES */}
+	<section class="section grid" id="programs">
+		<div class="rail" aria-hidden="true"><span class="dn">01</span></div>
+		<div class="well">
+			<SectionHead n="01" label="Programmes" href="/programs" />
+			{
+				programs.length > 0 ? (
+					<div class="record run-rows">
+						{programs.map((program, i) => (
+							<ProgramRow program={program} index={i} />
+						))}
+					</div>
+				) : (
+					<EmptyState
+						title="No programmes are published yet."
+						body="Programme records appear here as soon as they are added to the repository."
+					/>
+				)
+			}
+		</div>
+	</section>
+
+	{/* §6 — 02 EVENTS */}
+	<section class="section grid" id="events">
+		<div class="rail" aria-hidden="true"><span class="dn">02</span></div>
+		<div class="well">
+			<SectionHead n="02" label="Events" href="/events" />
+			{
+				events.length > 0 ? (
+					<div class="record">
+						{events.slice(0, 3).map((event) => (
+							<EventRow event={event} />
+						))}
+					</div>
+				) : (
+					<EmptyState
+						title="Nothing is scheduled right now."
+						body="The next sessions are announced in the Telegram group first."
+						actionLabel="Join the group"
+						actionHref={SITE.social.telegram}
+					/>
+				)
+			}
+		</div>
+	</section>
+
+	{/* §7 — 03 PROJECTS */}
+	<section class="section grid" id="projects">
+		<div class="rail" aria-hidden="true"><span class="dn">03</span></div>
+		<div class="well">
+			<SectionHead n="03" label="Projects" href="/projects" />
+			{
+				projects.length > 0 ? (
+					<div class="record">
+						{projects.map((project) => (
+							<ProjectRow project={project} />
+						))}
+					</div>
+				) : (
+					<EmptyState
+						title="The registry is empty."
+						body="Projects are listed here once a member opens a pull request describing one. Nothing is listed before it exists."
+					/>
+				)
+			}
+		</div>
+	</section>
+
+	{/* §8 — 04 LEARN */}
+	<section class="section grid" id="learn">
+		<div class="rail" aria-hidden="true"><span class="dn">04</span></div>
+		<div class="well">
+			<SectionHead n="04" label="Friday notes" href="/learn" />
+			{
+				notes.length > 0 ? (
+					<div class="record">
+						{notes.slice(0, 3).map((note) => (
+							<LearnRow note={note} />
+						))}
+					</div>
+				) : (
+					<EmptyState
+						title="No notes published yet."
+						body="Every Friday session is written up afterwards so people who missed it can still follow along."
+					/>
+				)
+			}
+		</div>
+	</section>
+
+	{/* §9 — 05 PEOPLE */}
+	<section class="section grid" id="people">
+		<div class="rail" aria-hidden="true"><span class="dn">05</span></div>
+		<div class="well">
+			<SectionHead n="05" label="People" href="/people" />
+			{
+				people.length > 0 ? (
+					<PeopleStrip people={people.slice(0, 6)} />
+				) : (
+					<EmptyState
+						title="The roster is not published yet."
+						body="Members are listed with their real names and what they build, once they have agreed to appear."
+					/>
+				)
+			}
+		</div>
+	</section>
+</Base>
+
+<style>
+	.fold {
+		padding-block: clamp(2.5rem, 6vw, 5rem);
+	}
+
+	.fold__deck {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.fold__standing {
+		margin-block: 2rem 1.75rem;
+		color: var(--ink-2);
+	}
+
+	.steps {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0 var(--gutter);
+		margin-block-start: 3rem;
+		border-block-start: 1px solid var(--rule);
+	}
+
+	.steps__item {
+		display: grid;
+		grid-template-columns: 2rem 1fr;
+		gap: 0.75rem;
+		padding-block: 1.25rem;
+		border-block-end: 1px solid var(--rule);
+	}
+
+	.steps__n {
+		color: var(--ink-4);
+		padding-block-start: 0.2rem;
+	}
+
+	.steps__title {
+		font-weight: 500;
+	}
+
+	.steps__body {
+		margin-block-start: 0.25rem;
+		color: var(--ink-3);
+	}
+
+	@media (width < 768px) {
+		.fold__standing {
+			margin-block: 1.5rem;
+		}
+		.steps {
+			grid-template-columns: minmax(0, 1fr);
+			margin-block-start: 2rem;
+		}
+	}
+</style>

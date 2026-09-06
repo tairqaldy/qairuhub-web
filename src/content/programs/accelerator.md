@@ -3,6 +3,9 @@ name: Qairu Accelerator
 tagline: Take a prototype to launch, with mentorship and a deadline.
 order: 3
 status: upcoming
+commitment: 8 weeks, part time
+requirements: A working prototype and a team of at least two.
+cohortSize: 8
 startsLabel: Spring 2027
 unit: accelerator
 outcomes:

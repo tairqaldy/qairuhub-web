@@ -1,0 +1,42 @@
+---
+interface Props {
+	title: string
+	body: string
+	actionLabel?: string
+	actionHref?: string
+}
+
+const { title, body, actionLabel, actionHref } = Astro.props
+---
+
+{/*
+  A sparse section is a first-class composition here, not a failure. The site
+  refuses to pad an index with invented entries, so the empty state has to be
+  designed: left-aligned like everything else, never centred, no illustration.
+*/}
+<div class="empty">
+	<p class="d4 empty__title">{title}</p>
+	<p class="body empty__body">{body}</p>
+	{actionLabel && actionHref && (
+		<a class="link-action m-button" href={actionHref}>
+			{actionLabel} <span aria-hidden="true">→</span>
+		</a>
+	)}
+</div>
+
+<style>
+	.empty {
+		padding-block: 2rem 2.5rem;
+		border-block-start: 1px solid var(--rule);
+		max-inline-size: 52ch;
+	}
+
+	.empty__title {
+		color: var(--ink-2);
+	}
+
+	.empty__body {
+		margin-block: 0.75rem 1.25rem;
+		color: var(--ink-3);
+	}
+</style>

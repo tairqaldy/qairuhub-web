@@ -1,0 +1,87 @@
+---
+import { Image } from 'astro:assets'
+import type { ImageMetadata } from 'astro'
+
+interface Props {
+	src?: ImageMetadata
+	alt?: string
+	caption?: string
+	credit?: string
+}
+
+const { src, alt, caption, credit } = Astro.props
+
+/**
+ * THE PLATE — documentary photography at compositional scale.
+ *
+ * Exactly one per page, and mandatory: it is the parent brand's defining trait
+ * and this design's only source of colour. Full colour at rest — never
+ * greyscale-until-hover, which is invisible on touch and drains the warmth from
+ * a page nobody is pointing at.
+ *
+ * With no photograph, it renders an honest frame rather than a stock image or a
+ * gradient. The site does not illustrate things that have not happened yet.
+ */
+const hasImage = Boolean(src && alt)
+---
+
+<figure class="plate bleed-right plate--full">
+	{
+		hasImage && src && alt ? (
+			<Image src={src} alt={alt} widths={[640, 1024, 1600]} sizes="100vw" loading="lazy" />
+		) : (
+			<div class="plate__pending">
+				<p class="m-eyebrow">Plate — awaiting photography</p>
+				<p class="m-note plate__pending-note">
+					A photograph of members working goes here. Real people, real sessions, in colour.
+					Nothing stands in for it in the meantime.
+				</p>
+			</div>
+		)
+	}
+
+	{
+		hasImage && (
+			<figcaption class="m-label">
+				<span>{caption}</span>
+				{credit && <span class="plate__credit">{credit}</span>}
+			</figcaption>
+		)
+	}
+</figure>
+
+<style>
+	.plate--full {
+		margin-block: 0;
+	}
+
+	/*
+	 * The pending frame keeps the plate's exact footprint, so the page
+	 * composition is the one that ships — the photograph drops straight in.
+	 */
+	.plate__pending {
+		display: flex;
+		flex-direction: column;
+		justify-content: end;
+		gap: 0.5rem;
+		aspect-ratio: 16 / 9;
+		max-block-size: 60vh;
+		padding: 1.5rem;
+		background: var(--paper-2);
+		background-image: repeating-linear-gradient(
+			-45deg,
+			transparent,
+			transparent 14px,
+			var(--rule) 14px,
+			var(--rule) 15px
+		);
+	}
+
+	.plate__pending-note {
+		max-inline-size: 46ch;
+	}
+
+	.plate__credit {
+		color: var(--ink-4);
+	}
+</style>

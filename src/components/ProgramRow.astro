@@ -1,0 +1,151 @@
+---
+import type { CollectionEntry } from 'astro:content'
+import { isRecentlyChanged } from '../lib/site'
+
+interface Props {
+	program: CollectionEntry<'programs'>
+	index: number
+}
+
+const { program, index } = Astro.props
+const { data } = program
+
+/**
+ * A programme record. Meta stack, name and description, entry requirement,
+ * then state and action — the reading order a prospective member needs.
+ *
+ * A programme with no open intake shows "closed" and no call to action. It
+ * never fakes availability.
+ */
+const now = new Date()
+
+/**
+ * A programme's status and its intake are two different things. Most
+ * programmes run continuously and you join by turning up; only some have a
+ * dated application window. Labelling a running programme "closed" because it
+ * has no intake date would turn the whole index into a wall of locked doors.
+ */
+const intakeOpen =
+	data.status === 'active' && data.intakeCloses !== undefined && data.intakeCloses > now
+
+const STATUS_LABEL = { active: 'Running', upcoming: 'Upcoming', paused: 'Paused' } as const
+const state = intakeOpen ? 'Intake open' : STATUS_LABEL[data.status]
+
+/* Only a dated, open intake earns the signal colour: it is actionable now. */
+const changed = isRecentlyChanged(data.updatedDate, now)
+---
+
+<article class="row" style={`--i:${index}`}>
+	<div class="row__meta">
+		{changed && (
+			<>
+				<span class="change-bar" aria-hidden="true"></span>
+				<span class="visually-hidden">Updated in the last week.</span>
+			</>
+		)}
+		{data.commitment && <p class="m-data">{data.commitment}</p>}
+		{data.cohortSize && <p class="m-data">{data.cohortSize} places</p>}
+		{data.startsLabel && <p class="m-data">{data.startsLabel}</p>}
+	</div>
+
+	<div class="row__main">
+		<h3 class="record__title">
+			<a href={`/programs/${program.id}`}>{data.name}</a>
+		</h3>
+		<p class="body row__tagline">{data.tagline}</p>
+	</div>
+
+	<div class="row__detail">
+		{data.requirements && <p class="m-data row__req">{data.requirements}</p>}
+		{data.outcomes.length > 0 && (
+			<ul class="row__outcomes">
+				{data.outcomes.map((outcome) => (
+					<li class="m-note">{outcome}</li>
+				))}
+			</ul>
+		)}
+	</div>
+
+	<div class="row__action">
+		<span class:list={['state', 'm-label', intakeOpen && 'state--live']}>{state}</span>
+		{intakeOpen && (
+			<a class="link-action m-button" href="/apply">
+				Apply <span aria-hidden="true">→</span>
+			</a>
+		)}
+	</div>
+</article>
+
+<style>
+	.row {
+		display: grid;
+		grid-template-columns: 2fr 4fr 3fr 2fr;
+		gap: 1rem var(--gutter);
+		align-items: start;
+		padding-block: 1.5rem;
+		border-block-end: 1px solid var(--rule);
+		transition: background-color var(--t-fast) var(--ease-out);
+	}
+
+	.row:hover {
+		background: var(--paper-2);
+	}
+
+	.row__meta {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		color: var(--ink-3);
+	}
+
+	.row__tagline {
+		margin-block-start: 0.5rem;
+		color: var(--ink-2);
+	}
+
+	.row__req {
+		color: var(--ink-3);
+	}
+
+	.row__outcomes {
+		margin-block-start: 0.75rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+	}
+
+	/* Hanging list, the way a printed specification sets its clauses. */
+	.row__outcomes li {
+		padding-inline-start: 1rem;
+		text-indent: -1rem;
+	}
+
+	.row__outcomes li::before {
+		content: '— ';
+		color: var(--ink-4);
+	}
+
+	.row__action {
+		display: flex;
+		flex-direction: column;
+		align-items: start;
+		gap: 0.75rem;
+	}
+
+	@media (width < 1024px) {
+		.row {
+			grid-template-columns: 1fr 1fr;
+		}
+		.row__main {
+			grid-column: 1 / -1;
+			order: -1;
+		}
+	}
+
+	@media (width < 768px) {
+		.row {
+			grid-template-columns: 1fr;
+			padding-block: 1.25rem;
+		}
+	}
+</style>

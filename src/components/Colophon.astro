@@ -1,0 +1,120 @@
+---
+import { NAV, SITE } from '../lib/site'
+
+/**
+ * §10 — the colophon.
+ *
+ * It inverts: ink ground, paper text. This is the parent brand's own polarity
+ * quoted directly, and it is the structural reason the site does not read as
+ * one more dark developer page — it ends on white.
+ */
+const year = 2026
+---
+
+<footer class="colophon">
+	<div class="page colophon__inner">
+		<div class="colophon__brand">
+			<span class="wordmark d3">{SITE.wordmark.strong}<em>{SITE.wordmark.light}</em></span>
+			<p class="m-label colophon__motto">{SITE.tagline}</p>
+		</div>
+
+		<nav class="colophon__nav" aria-label="Footer">
+			<h2 class="m-eyebrow colophon__heading">Sections</h2>
+			<ul>
+				{
+					NAV.map((item) => (
+						<li>
+							<a class="m-label" href={item.href}>
+								{item.label}
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</nav>
+
+		<div class="colophon__meta">
+			<h2 class="m-eyebrow colophon__heading">Elsewhere</h2>
+			<ul>
+				<li>
+					<a class="m-label" href={SITE.social.github} rel="noopener" target="_blank">GitHub</a>
+				</li>
+				<li>
+					<a class="m-label" href={SITE.social.telegram} rel="noopener" target="_blank">Telegram</a>
+				</li>
+				<li>
+					<a class="m-label" href={SITE.university.url} rel="noopener" target="_blank">
+						{SITE.university.name}
+					</a>
+				</li>
+			</ul>
+		</div>
+
+		<p class="m-note colophon__legal">
+			{SITE.name} · {SITE.location} · {year}
+		</p>
+	</div>
+</footer>
+
+<style>
+	.colophon__inner {
+		display: grid;
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		gap: 2rem var(--gutter);
+		padding-block: 4rem 2rem;
+	}
+
+	.colophon__brand {
+		grid-column: 1 / span 5;
+	}
+
+	.colophon__motto {
+		margin-block-start: 0.75rem;
+		opacity: 0.72;
+	}
+
+	.colophon__nav {
+		grid-column: 7 / span 3;
+	}
+
+	.colophon__meta {
+		grid-column: 10 / span 3;
+	}
+
+	.colophon__heading {
+		/* The eyebrow's own colour is tuned for the dark ground; on the inverted
+		   footer it has to come from the inverted ramp instead. */
+		color: inherit;
+		opacity: 0.6;
+		margin-block-end: 0.75rem;
+	}
+
+	.colophon__nav li,
+	.colophon__meta li {
+		padding-block: 0.3rem;
+	}
+
+	.colophon__legal {
+		grid-column: 1 / -1;
+		margin-block-start: 2rem;
+		padding-block-start: 1.5rem;
+		border-block-start: 1px solid color-mix(in oklch, var(--paper) 25%, transparent);
+		color: inherit;
+		opacity: 0.6;
+	}
+
+	@media (width < 768px) {
+		.colophon__inner {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+		.colophon__brand {
+			grid-column: 1 / -1;
+		}
+		.colophon__nav {
+			grid-column: 1;
+		}
+		.colophon__meta {
+			grid-column: 2;
+		}
+	}
+</style>

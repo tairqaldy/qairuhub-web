@@ -1,0 +1,80 @@
+---
+/**
+ * Three-state theme control: system → light → dark → system.
+ *
+ * A word, never an icon — the site uses no emoji or pictograms in its UI, and
+ * the current state has to be readable, which a sun/moon glyph cannot express
+ * for the "system" case.
+ */
+---
+
+<button class="theme m-label" type="button" data-theme-toggle aria-live="polite">
+	<span class="visually-hidden">Colour theme:</span>
+	<span data-theme-label>System</span>
+</button>
+
+<style>
+	.theme {
+		display: inline-flex;
+		align-items: center;
+		min-block-size: 32px;
+		padding-inline: 0.5rem;
+		background: transparent;
+		border: 1px solid var(--rule);
+		border-radius: var(--radius-inline);
+		color: var(--ink-3);
+		cursor: pointer;
+		transition:
+			color var(--t-fast) var(--ease-out),
+			border-color var(--t-fast) var(--ease-out);
+	}
+
+	.theme:hover {
+		color: var(--ink-1);
+		border-color: var(--rule-strong);
+	}
+</style>
+
+<script>
+	type Theme = 'system' | 'light' | 'dark'
+
+	const KEY = 'qh-theme'
+	const ORDER: Theme[] = ['system', 'light', 'dark']
+	const LABEL: Record<Theme, string> = { system: 'System', light: 'Light', dark: 'Dark' }
+
+	const button = document.querySelector<HTMLButtonElement>('[data-theme-toggle]')
+	const label = document.querySelector<HTMLElement>('[data-theme-label]')
+
+	/** Reading storage can throw outright in some privacy modes, not just return null. */
+	function read(): Theme {
+		try {
+			const value = localStorage.getItem(KEY)
+			return value === 'light' || value === 'dark' ? value : 'system'
+		} catch {
+			return 'system'
+		}
+	}
+
+	function apply(theme: Theme) {
+		if (theme === 'system') {
+			delete document.documentElement.dataset.theme
+		} else {
+			document.documentElement.dataset.theme = theme
+		}
+		if (label) label.textContent = LABEL[theme]
+		try {
+			if (theme === 'system') localStorage.removeItem(KEY)
+			else localStorage.setItem(KEY, theme)
+		} catch {
+			/* The choice still applies to this page view. */
+		}
+	}
+
+	if (button) {
+		apply(read())
+		button.addEventListener('click', () => {
+			const next = ORDER[(ORDER.indexOf(read()) + 1) % ORDER.length]
+			apply(next)
+		})
+	}
+</script>

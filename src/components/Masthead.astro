@@ -1,0 +1,330 @@
+---
+import { LOCALES, NAV, PLANNED_LOCALES, SITE } from '../lib/site'
+import ThemeToggle from './ThemeToggle.astro'
+
+interface Props {
+	/** Href prefix of the active section, e.g. "/events". */
+	section?: string
+}
+
+const { section } = Astro.props
+
+/**
+ * The homepage sets the nameplate at display size as its `h1` (§11 §1). Every
+ * other page shrinks it to a link home, because there the `h1` belongs to the
+ * page's own subject.
+ */
+const isHome = Astro.url.pathname === '/'
+
+/** Authored per language — never machine-wrapped. Three lines, one motto. */
+const MOTTO = ['Learn it.', 'Build it.', 'Launch it.']
+---
+
+{/*
+  §0 — the masthead strip. A credit line to the parent institution and the
+  language switch. Nothing else: no clock, no coordinates, no date. A clock on a
+  statically built page is either stale or an island on every route.
+*/}
+<div class="masthead m-label">
+	<a href={SITE.university.url} rel="noopener" target="_blank">
+		{SITE.university.name} · {SITE.university.motto.toUpperCase()} <span aria-hidden="true">↗</span>
+	</a>
+
+	<div class="masthead__right">
+		<ul class="lang" aria-label="Language">
+			{
+				LOCALES.map((locale) => (
+					<li>
+						<span class="lang__current" aria-current="true">
+							{locale.label}
+						</span>
+					</li>
+				))
+			}
+			{
+				PLANNED_LOCALES.map((locale) => (
+					<li>
+						<span class="lang__planned" title="Coming soon">
+							{locale.label}
+						</span>
+					</li>
+				))
+			}
+		</ul>
+		<ThemeToggle />
+	</div>
+</div>
+
+{/* §1 — the nameplate. On the homepage it is the h1; elsewhere it is a link home. */}
+<header class:list={['nameplate', isHome && 'nameplate--home']}>
+	{
+		isHome ? (
+			<h1 class="wordmark d1 run-type">
+				{SITE.wordmark.strong}
+				<em>{SITE.wordmark.light}</em>
+			</h1>
+		) : (
+			<a class="wordmark d3" href="/">
+				{SITE.wordmark.strong}
+				<em>{SITE.wordmark.light}</em>
+			</a>
+		)
+	}
+
+	{
+		isHome && (
+			<p class="motto m-label">
+				{MOTTO.map((line) => (
+					<span>{line}</span>
+				))}
+			</p>
+		)
+	}
+
+	<button class="nav__toggle m-button" type="button" aria-expanded="false" aria-controls="index-sheet">
+		Menu
+	</button>
+</header>
+
+{/*
+  §2 — the section index, on its own rule beneath the nameplate. Numbered, so
+  it agrees with the rail numerals and the section eyebrows.
+*/}
+<nav class="nav" aria-label="Sections">
+	<ul class="nav__list">
+		{
+			NAV.map((item) => (
+				<li>
+					<a
+						class="nav__link m-label"
+						href={item.href}
+						aria-current={section === item.href ? 'page' : undefined}
+					>
+						<span class="nav__n" aria-hidden="true">
+							{item.n}
+						</span>
+						<span>{item.label}</span>
+					</a>
+				</li>
+			))
+		}
+	</ul>
+</nav>
+
+{/*
+  Below 768px the nav becomes a full-screen contents page, not a drawer —
+  the same numbered list, one item per row. Closed by default and inert until
+  opened, so it is never reachable by keyboard while hidden.
+*/}
+<div class="sheet" id="index-sheet" hidden>
+	<div class="sheet__head">
+		<span class="m-eyebrow">Contents</span>
+		<button class="sheet__close m-button" type="button">Close</button>
+	</div>
+	<ul>
+		{
+			NAV.map((item) => (
+				<li>
+					<a class="sheet__link" href={item.href}>
+						<span class="m-label sheet__n">{item.n}</span>
+						<span class="d5">{item.label}</span>
+					</a>
+				</li>
+			))
+		}
+	</ul>
+</div>
+
+<style>
+	.masthead__right {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.lang {
+		display: flex;
+		gap: 0.75rem;
+	}
+
+	.lang__current {
+		color: var(--ink-1);
+		padding-block-end: 2px;
+		border-block-end: 2px solid var(--cobalt);
+	}
+
+	/* A language we have not published yet is shown, not hidden — the promise is
+	   honest, and it is plainly not a link. */
+	.lang__planned {
+		color: var(--ink-4);
+	}
+
+	.nameplate {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 1.5rem;
+		padding-block: 1.25rem;
+		border-block-end: 1px solid var(--rule);
+	}
+
+	/* One of only two 2px rules on the homepage. */
+	.nameplate--home {
+		flex-wrap: wrap;
+		align-items: end;
+		padding-block: 2.5rem 1.5rem;
+		border-block-end: 2px solid var(--rule-2);
+	}
+
+	.motto {
+		display: flex;
+		flex-direction: column;
+		text-align: end;
+		text-transform: uppercase;
+		color: var(--ink-3);
+		margin-block-end: 0.5rem;
+	}
+
+	.nav {
+		border-block-end: 1px solid var(--rule);
+	}
+
+	.nav__list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem 1.75rem;
+		padding-block: 0.75rem;
+	}
+
+	.nav__link {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 0.4rem;
+	}
+
+	.nav__n {
+		color: var(--ink-4);
+	}
+
+	.nav__toggle,
+	.sheet {
+		display: none;
+	}
+
+	/* Each nav cell is separated by a hairline, the way a contents rule is set. */
+	.nav__list > li + li {
+		border-inline-start: 1px solid var(--rule);
+		padding-inline-start: 1.75rem;
+		margin-inline-start: -0.5rem;
+	}
+
+	@media (width < 900px) {
+		.nav {
+			display: none;
+		}
+
+		.nav__toggle {
+			display: inline-flex;
+			align-items: center;
+			min-block-size: 44px;
+			padding-inline: 0.75rem;
+			background: transparent;
+			border: 1px solid var(--rule-strong);
+			border-radius: var(--radius-control);
+			cursor: pointer;
+		}
+
+		.sheet {
+			display: block;
+			position: fixed;
+			inset: 0;
+			z-index: 20;
+			background: var(--paper);
+			padding: var(--pad);
+			overflow-y: auto;
+		}
+
+		.sheet[hidden] {
+			display: none;
+		}
+
+		.sheet__head {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding-block-end: 1rem;
+			border-block-end: 1px solid var(--rule);
+		}
+
+		.sheet__close {
+			min-block-size: 44px;
+			padding-inline: 0.75rem;
+			background: transparent;
+			border: 1px solid var(--rule-strong);
+			border-radius: var(--radius-control);
+			cursor: pointer;
+		}
+
+		.sheet__link {
+			display: flex;
+			align-items: baseline;
+			gap: 1rem;
+			min-block-size: 56px;
+			padding-block: 1rem;
+			border-block-end: 1px solid var(--rule);
+			text-decoration: none;
+		}
+
+		.sheet__n {
+			color: var(--ink-4);
+		}
+	}
+</style>
+
+<script>
+	/*
+	 * The index sheet. Small enough to be worth hand-writing rather than
+	 * hydrating a component: focus is trapped while open, Escape closes, and
+	 * focus returns to the trigger.
+	 */
+	const toggle = document.querySelector<HTMLButtonElement>('.nav__toggle')
+	const sheet = document.querySelector<HTMLElement>('#index-sheet')
+	const close = sheet?.querySelector<HTMLButtonElement>('.sheet__close')
+
+	if (toggle && sheet && close) {
+		const focusable = () =>
+			Array.from(sheet.querySelectorAll<HTMLElement>('a[href], button:not([disabled])'))
+
+		const setOpen = (open: boolean) => {
+			sheet.hidden = !open
+			toggle.setAttribute('aria-expanded', String(open))
+			document.body.style.overflow = open ? 'hidden' : ''
+			if (open) focusable()[0]?.focus()
+			else toggle.focus()
+		}
+
+		toggle.addEventListener('click', () => setOpen(sheet.hasAttribute('hidden')))
+		close.addEventListener('click', () => setOpen(false))
+
+		sheet.addEventListener('keydown', (event) => {
+			if (event.key === 'Escape') {
+				setOpen(false)
+				return
+			}
+			if (event.key !== 'Tab') return
+
+			const items = focusable()
+			if (items.length === 0) return
+			const first = items[0]
+			const last = items[items.length - 1]
+
+			if (event.shiftKey && document.activeElement === first) {
+				event.preventDefault()
+				last.focus()
+			} else if (!event.shiftKey && document.activeElement === last) {
+				event.preventDefault()
+				first.focus()
+			}
+		})
+	}
+</script>

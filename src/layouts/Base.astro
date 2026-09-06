@@ -1,0 +1,84 @@
+---
+import { Font } from 'astro:assets'
+import Colophon from '../components/Colophon.astro'
+import Masthead from '../components/Masthead.astro'
+import { SITE } from '../lib/site'
+import '../styles/global.css'
+
+interface Props {
+	title: string
+	description?: string
+	/** Path of the current section, used to mark the active nav item. */
+	section?: string
+	/** Omit the page from search indexes — used by the /dev routes. */
+	noindex?: boolean
+	/** OG image path, relative to the site root. */
+	image?: string
+}
+
+const { title, description = SITE.description, section, noindex = false, image } = Astro.props
+
+const pageTitle = title === SITE.name ? `${SITE.name} — ${SITE.tagline}` : `${title} · ${SITE.name}`
+const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://qairuhub.com')
+const ogImage = image ? new URL(image, canonical) : undefined
+---
+
+<!doctype html>
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{pageTitle}</title>
+		<meta name="description" content={description} />
+		<link rel="canonical" href={canonical.href} />
+		{noindex && <meta name="robots" content="noindex, nofollow" />}
+
+		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+		<link rel="icon" href="/favicon.ico" sizes="32x32" />
+
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content={SITE.name} />
+		<meta property="og:title" content={pageTitle} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonical.href} />
+		{ogImage && <meta property="og:image" content={ogImage.href} />}
+		<meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+
+		{/* Self-hosted and subset by Astro. The two display faces are preloaded
+		    because the nameplate is the LCP element on every page. */}
+		<Font cssVariable="--font-display-latin" preload />
+		<Font cssVariable="--font-display-cyrillic" />
+		<Font cssVariable="--font-sans-base" preload />
+		<Font cssVariable="--font-mono-base" preload />
+
+		{/*
+		  Applies a stored theme choice before the first paint, so a reader who
+		  picked light mode never sees a dark flash. Deliberately inline and
+		  synchronous — this is the one script that cannot wait, and it is small
+		  enough to stay well inside the JS budget.
+		*/}
+		<script is:inline>
+			try {
+				const stored = localStorage.getItem('qh-theme')
+				if (stored === 'light' || stored === 'dark') {
+					document.documentElement.dataset.theme = stored
+				}
+			} catch {
+				/* Private mode or blocked storage: the system preference still applies. */
+			}
+		</script>
+	</head>
+
+	<body>
+		<a class="skip-link m-button" href="#main">Skip to content</a>
+
+		<div class="page">
+			<Masthead section={section} />
+			<main id="main">
+				<slot />
+			</main>
+		</div>
+
+		<Colophon />
+	</body>
+</html>

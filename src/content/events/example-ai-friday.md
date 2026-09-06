@@ -3,6 +3,9 @@ title: 'AI Fridays: building your first agent'
 starts: 2026-09-19T17:00:00+05:00
 ends: 2026-09-19T19:00:00+05:00
 location: QAIRU, Astana
+room: Lab 2.14
+walkIn: true
+capacity: 30
 program: qairu-ai
 summary: A two-hour working session where everyone leaves with an agent that calls a real tool and handles a failure case.
 tags: [agents, hands-on]

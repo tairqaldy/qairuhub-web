@@ -40,3 +40,6 @@ coverage/
 
 # os
 Thumbs.db
+
+# design screenshots
+.shots/

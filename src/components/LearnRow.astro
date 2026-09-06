@@ -1,0 +1,81 @@
+---
+import type { CollectionEntry } from 'astro:content'
+import { formatShortDate, isRecentlyChanged } from '../lib/site'
+
+interface Props {
+	note: CollectionEntry<'learn'>
+}
+
+const { note } = Astro.props
+const { data } = note
+
+const KIND_LABEL = {
+	note: 'Note',
+	guide: 'Guide',
+	recording: 'Recording',
+	'reading-list': 'Reading list',
+} as const
+
+const changed = isRecentlyChanged(data.updatedDate)
+---
+
+<article class="row">
+	<div class="row__meta">
+		{changed && <span class="change-bar" aria-hidden="true"></span>}
+		<span class="m-data">{formatShortDate(data.publishDate)}</span>
+	</div>
+
+	<div class="row__main">
+		<h3 class="record__title">
+			<a href={`/learn/${note.id}`}>{data.title}</a>
+		</h3>
+		<p class="body row__summary">{data.summary}</p>
+	</div>
+
+	<div class="row__action">
+		<span class="state m-label">{KIND_LABEL[data.kind]}</span>
+		{data.minutes && <span class="m-note">{data.minutes} min</span>}
+	</div>
+</article>
+
+<style>
+	.row {
+		display: grid;
+		grid-template-columns: 72px 1fr auto;
+		gap: 0.75rem var(--gutter);
+		align-items: start;
+		padding-block: 1.25rem;
+		border-block-end: 1px solid var(--rule);
+		transition: background-color var(--t-fast) var(--ease-out);
+	}
+
+	.row:hover {
+		background: var(--paper-2);
+	}
+
+	.row__meta {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		color: var(--ink-3);
+		padding-block-start: 0.3rem;
+	}
+
+	.row__summary {
+		margin-block-start: 0.35rem;
+		color: var(--ink-2);
+	}
+
+	.row__action {
+		display: flex;
+		flex-direction: column;
+		align-items: start;
+		gap: 0.5rem;
+	}
+
+	@media (width < 768px) {
+		.row {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

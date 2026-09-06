@@ -1,0 +1,108 @@
+---
+import type { CollectionEntry } from 'astro:content'
+import { formatShortDate, isRecentlyChanged } from '../lib/site'
+
+interface Props {
+	project: CollectionEntry<'projects'>
+}
+
+const { project } = Astro.props
+const { data } = project
+
+const STAGE_LABEL = {
+	idea: 'Idea',
+	prototype: 'Prototype',
+	launched: 'Launched',
+	archived: 'Archived',
+} as const
+
+const changed = isRecentlyChanged(data.updatedDate)
+---
+
+<article class="row">
+	<div class="row__meta">
+		{changed && <span class="change-bar" aria-hidden="true"></span>}
+		<span class="m-data">{formatShortDate(data.started)}</span>
+	</div>
+
+	<div class="row__main">
+		<h3 class="record__title">
+			<a href={`/projects/${project.id}`}>{data.name}</a>
+		</h3>
+		<p class="body row__line">{data.oneLiner}</p>
+		{data.tags.length > 0 && (
+			<ul class="row__tags">
+				{data.tags.map((tag) => (
+					<li class="tag m-note">{tag}</li>
+				))}
+			</ul>
+		)}
+	</div>
+
+	<div class="row__action">
+		<span class:list={['state', 'm-label', data.stage === 'launched' && 'state--live']}>
+			{STAGE_LABEL[data.stage]}
+		</span>
+		{data.repo && (
+			<a class="m-label row__link" href={data.repo} rel="noopener" target="_blank">
+				Source <span aria-hidden="true">↗</span>
+			</a>
+		)}
+	</div>
+</article>
+
+<style>
+	.row {
+		display: grid;
+		grid-template-columns: 72px 1fr auto;
+		gap: 0.75rem var(--gutter);
+		align-items: start;
+		padding-block: 1.25rem;
+		border-block-end: 1px solid var(--rule);
+		transition: background-color var(--t-fast) var(--ease-out);
+	}
+
+	.row:hover {
+		background: var(--paper-2);
+	}
+
+	.row__meta {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		color: var(--ink-3);
+		padding-block-start: 0.3rem;
+	}
+
+	.row__line {
+		margin-block-start: 0.35rem;
+		color: var(--ink-2);
+	}
+
+	.row__tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.375rem;
+		margin-block-start: 0.6rem;
+	}
+
+	.tag {
+		padding: 0.15rem 0.4rem;
+		border: 1px solid var(--rule);
+		border-radius: var(--radius-inline);
+		color: var(--ink-3);
+	}
+
+	.row__action {
+		display: flex;
+		flex-direction: column;
+		align-items: start;
+		gap: 0.6rem;
+	}
+
+	@media (width < 768px) {
+		.row {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

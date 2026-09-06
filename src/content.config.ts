@@ -27,6 +27,18 @@ import { z } from 'astro/zod'
 
 /** Fields every collection shares. */
 const base = {
+	/**
+	 * Which language this entry is written in. The site never mixes languages
+	 * inside one viewport, so this is what a page checks before rendering.
+	 */
+	lang: z.enum(['en', 'ru', 'kk']).default('en'),
+	/** Links the language versions of one entry together. Defaults to the slug. */
+	translationKey: z.string().optional(),
+	/**
+	 * Last substantive change. The margin change-bar marks anything edited in
+	 * the last seven days, and has no data source without this.
+	 */
+	updatedDate: z.coerce.date().optional(),
 	/** Hidden outside `astro dev`. */
 	draft: z.boolean().default(false),
 	/**
@@ -49,6 +61,12 @@ const events = defineCollection({
 			starts: z.coerce.date(),
 			ends: z.coerce.date().optional(),
 			location: z.string().default('QAIRU, Astana'),
+			/** Specific room, so someone can actually find it. */
+			room: z.string().max(60).optional(),
+			/** The capacity rule renders only with a live count to compare against. */
+			capacity: z.number().int().positive().optional(),
+			/** Open to anyone, no application. The lowest-commitment door. */
+			walkIn: z.boolean().default(false),
 			/** Which programme this event belongs to, if any. */
 			program: reference('programs').optional(),
 			summary: z.string().min(20).max(220),
@@ -74,6 +92,13 @@ const programs = defineCollection({
 			status: z.enum(['active', 'upcoming', 'paused']).default('active'),
 			/** Shown next to an `upcoming` programme, e.g. "Spring 2027". */
 			startsLabel: z.string().optional(),
+			/** Time commitment, stated plainly: "4 hours a week, 8 weeks". */
+			commitment: z.string().max(80).optional(),
+			/** The entry bar, stated plainly. Say when there isn't one. */
+			requirements: z.string().max(160).optional(),
+			cohortSize: z.number().int().positive().optional(),
+			/** Absent or past means the row renders "closed" and shows no CTA. */
+			intakeCloses: z.coerce.date().optional(),
 			unit: unit,
 			lead: reference('people').optional(),
 			cover: image().optional(),

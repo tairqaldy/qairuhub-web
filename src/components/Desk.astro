@@ -1,0 +1,187 @@
+---
+import type { CollectionEntry } from 'astro:content'
+import { formatLongDate, formatTime, isRecentlyChanged, SITE } from '../lib/site'
+
+interface Props {
+	event?: CollectionEntry<'events'>
+	project?: CollectionEntry<'projects'>
+	note?: CollectionEntry<'learn'>
+}
+
+const { event, project, note } = Astro.props
+
+/**
+ * THE DESK — the live facts, ordered as a conversion ladder with the lowest
+ * commitment first.
+ *
+ * Item 01 is the walk-in Friday, because the person who is not sure yet needs a
+ * door before they need a form. Item 02 is the open intake and carries the
+ * page's single cobalt fill.
+ *
+ * The desk is never padded. If only two items are live, it is two items long.
+ */
+
+interface DeskItem {
+	label: string
+	title: string
+	meta?: string
+	body?: string
+	href: string
+	linkLabel: string
+	/** The one item allowed the solid cobalt fill. */
+	primary?: boolean
+	changed?: boolean
+}
+
+const items: DeskItem[] = []
+
+if (event) {
+	items.push({
+		label: 'Next session',
+		title: event.data.title,
+		meta: `${formatLongDate(event.data.starts)} · ${formatTime(event.data.starts)} · ${event.data.location}`,
+		body: event.data.walkIn
+			? 'Walk in — no application needed.'
+			: 'RSVP first — places are limited.',
+		href: `/events/${event.id}`,
+		linkLabel: 'Details',
+		changed: isRecentlyChanged(event.data.updatedDate),
+	})
+}
+
+/*
+ * Membership is open continuously, so this item is always live. If that ever
+ * stops being true it must show the closed state and a waitlist — it never
+ * fakes availability.
+ */
+items.push({
+	label: 'Applications',
+	title: 'Membership is open',
+	meta: 'Rolling intake · reviewed weekly',
+	body: 'Tell us what you want to build. A couple of paragraphs is enough.',
+	href: '/apply',
+	linkLabel: 'Apply',
+	primary: true,
+})
+
+if (project) {
+	items.push({
+		label: 'Latest build',
+		title: project.data.name,
+		meta: project.data.stage,
+		body: project.data.oneLiner,
+		href: `/projects/${project.id}`,
+		linkLabel: 'Read',
+		changed: isRecentlyChanged(project.data.updatedDate),
+	})
+}
+
+if (note) {
+	items.push({
+		label: 'Latest note',
+		title: note.data.title,
+		meta: formatLongDate(note.data.publishDate),
+		href: `/learn/${note.id}`,
+		linkLabel: 'Read',
+		changed: isRecentlyChanged(note.data.updatedDate),
+	})
+}
+---
+
+<section class="desk" aria-labelledby="desk-heading">
+	<h2 class="m-eyebrow desk__heading" id="desk-heading">The desk</h2>
+
+	<ol class="desk__list run-rows">
+		{
+			items.map((item, i) => (
+				<li class="desk__item" style={`--i:${i}`}>
+					<span class="m-eyebrow desk__n" aria-hidden="true">
+						{String(i + 1).padStart(2, '0')}
+					</span>
+
+					<div class="desk__body">
+						<p class="m-label desk__label">
+							{item.changed && (
+								<>
+									<span class="change-bar" aria-hidden="true" />
+									<span class="visually-hidden">Updated in the last week. </span>
+								</>
+							)}
+							{item.label}
+						</p>
+
+						<p class="d5 desk__title">{item.title}</p>
+						{item.meta && <p class="m-data desk__meta">{item.meta}</p>}
+						{item.body && <p class="small desk__text">{item.body}</p>}
+
+						{item.primary ? (
+							<a class="cta-primary m-button desk__cta" href={item.href}>
+								{item.linkLabel} <span aria-hidden="true">→</span>
+							</a>
+						) : (
+							<a class="link-action m-button" href={item.href}>
+								{item.linkLabel} <span aria-hidden="true">→</span>
+							</a>
+						)}
+					</div>
+				</li>
+			))
+		}
+	</ol>
+
+	<p class="m-note desk__aside">
+		Not ready to apply? The Friday sessions are open to anyone — turn up, or ask in
+		<a href={SITE.social.telegram} rel="noopener" target="_blank">Telegram</a>.
+	</p>
+</section>
+
+<style>
+	.desk__heading {
+		padding-block-end: 0.75rem;
+		border-block-end: 1px solid var(--rule-2);
+	}
+
+	.desk__item {
+		display: grid;
+		grid-template-columns: 20px 1fr;
+		gap: 0.75rem;
+		padding-block: 1.25rem;
+		border-block-end: 1px solid var(--rule);
+	}
+
+	.desk__n {
+		/* Hanging indent, the way an ordinal sits in a printed list. */
+		color: var(--ink-4);
+		padding-block-start: 0.15rem;
+	}
+
+	.desk__label {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		color: var(--ink-3);
+	}
+
+	.desk__title {
+		margin-block-start: 0.35rem;
+	}
+
+	.desk__meta {
+		margin-block-start: 0.35rem;
+		color: var(--ink-3);
+	}
+
+	.desk__text {
+		margin-block-start: 0.5rem;
+		color: var(--ink-2);
+	}
+
+	.desk__cta,
+	.desk__body .link-action {
+		margin-block-start: 0.9rem;
+	}
+
+	.desk__aside {
+		margin-block-start: 1rem;
+	}
+</style>
