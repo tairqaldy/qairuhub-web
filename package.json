@@ -26,7 +26,8 @@
 		"db:migrate:local": "wrangler d1 migrations apply qairuhub --local",
 		"db:migrate:remote": "wrangler d1 migrations apply qairuhub --remote",
 		"deploy:prod": "astro build && wrangler deploy",
-		"prepare": "lefthook install"
+		"prepare": "lefthook install",
+		"check:fonts": "node scripts/check-font-coverage.mjs"
 	},
 	"dependencies": {
 		"@astrojs/cloudflare": "^14.3.0",
@@ -60,7 +61,8 @@
 		"@playwright/test": "^1.63.0",
 		"lefthook": "^2.1.12",
 		"typescript": "^6.0.3",
-		"vitest": "^5.0.0"
+		"vitest": "^5.0.0",
+		"wawoff2": "^2.0.1"
 	},
 	"description": "QairuHub — the student-driven builder and AI community at QAIRU, Astana."
 }
