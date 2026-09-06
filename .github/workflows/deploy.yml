@@ -9,25 +9,86 @@ concurrency:
   group: deploy-production
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   deploy:
     name: Deploy to Cloudflare Workers
     runs-on: ubuntu-latest
-    environment: production
-    # Requires repository secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID.
-    if: ${{ github.repository_owner != '' }}
+
+    # Continuous deployment is OFF until you deliberately turn it on.
+    #
+    # This repository is public, and the API token this job needs can edit
+    # Workers, KV, D1, R2 and Pages across the whole Cloudflare account — which
+    # hosts more than this site. That is a real decision, so it is opt-in rather
+    # than something that quietly starts working.
+    #
+    # Without the flag the job is SKIPPED, not failed, so a push does not show a
+    # red cross for a deploy nobody asked for. See docs/ARCHITECTURE.md.
+    #
+    # To enable:
+    #   1. Cloudflare → My Profile → API Tokens → Create Token
+    #      → "Edit Cloudflare Workers" template, scoped to this account only.
+    #   2. GitHub → Settings → Secrets and variables → Actions:
+    #        secret   CLOUDFLARE_API_TOKEN
+    #        secret   CLOUDFLARE_ACCOUNT_ID   (aefda65292e1c46cd3d2c93049b66b03)
+    #        variable CD_ENABLED = true
+    #
+    # Until then, deploy from a machine that is already logged in:
+    #   pnpm run deploy:prod
+    if: vars.CD_ENABLED == 'true'
+
+    environment:
+      name: production
+      url: https://qairuhub.com
+
     steps:
-      - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22.12.0
+          node-version-file: .nvmrc
           cache: pnpm
+
+      # Fail with a sentence someone can act on, rather than deep inside
+      # wrangler with an opaque authentication error.
+      - name: Check deploy credentials are present
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          missing=""
+          [ -z "$CLOUDFLARE_API_TOKEN" ] && missing="$missing CLOUDFLARE_API_TOKEN"
+          [ -z "$CLOUDFLARE_ACCOUNT_ID" ] && missing="$missing CLOUDFLARE_ACCOUNT_ID"
+          if [ -n "$missing" ]; then
+            echo "::error::CD_ENABLED is true but these secrets are missing:$missing"
+            echo "Add them under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build
+
       - name: Publish Worker
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy
+
+      # A deploy that reports success while the site is down is worse than a
+      # deploy that fails loudly.
+      - name: Verify the deployed site answers
+        run: |
+          for attempt in 1 2 3 4 5; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 https://qairuhub.com/ || echo 000)
+            if [ "$code" = "200" ]; then
+              echo "qairuhub.com responded 200"
+              exit 0
+            fi
+            echo "attempt $attempt: got $code, retrying"
+            sleep 10
+          done
+          echo "::error::qairuhub.com did not return 200 after deploying"
+          exit 1

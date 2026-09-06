@@ -146,6 +146,37 @@ removed so the Worker could take the hostname.
 The five `MX` records and the SPF `TXT` are Namecheap email forwarding. **Leave
 them alone** — deleting them silently breaks mail for the domain.
 
+### Continuous deployment
+
+The `Deploy` workflow is **gated off by default** and skips rather than fails.
+
+The API token it would need can edit Workers, KV, D1, R2 and Pages across the
+entire Cloudflare account — which hosts more than this site — and this
+repository is public. That is a deliberate decision, not a default. Until it is
+made, deploy from a machine that is already logged in:
+
+```bash
+pnpm run deploy:prod
+```
+
+To turn it on:
+
+1. Cloudflare → My Profile → API Tokens → Create Token → **Edit Cloudflare
+   Workers** template, scoped to this account only.
+2. GitHub → Settings → Secrets and variables → Actions:
+   - secret `CLOUDFLARE_API_TOKEN`
+   - secret `CLOUDFLARE_ACCOUNT_ID` = `aefda65292e1c46cd3d2c93049b66b03`
+   - **variable** `CD_ENABLED` = `true`
+
+The job checks both secrets before building and fails with a readable message if
+either is missing, and curls the live site afterwards — a deploy that reports
+success while the site is down is worse than one that fails loudly.
+
+An alternative worth considering is **Cloudflare Workers Builds**, which
+connects the repository on Cloudflare's side and stores no credential in GitHub
+at all, and gives per-pull-request preview URLs. It costs a GitHub App
+installation instead.
+
 ### Secrets
 
 Set with `wrangler secret put <NAME>`, or in the dashboard under
