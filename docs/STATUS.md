@@ -125,9 +125,12 @@ are fixed; these are the ones deliberately left, with the reason.
   compensates through type, grid, density and border structure, and mechanises
   the restraint in `scripts/check-cobalt.mjs`. If the site ever starts to look
   generic, that file is where the discipline lives.
-- **Space Grotesk has no Cyrillic**, so Kazakh and Russian headlines set in
-  Onest. Cap heights match within 1%, but x-heights differ by about 7%. Decks
-  are line-broken per language so the two never sit side by side.
+- **The display face is Onest, not Space Grotesk.** Space Grotesk is the more
+  distinctive face but contains no Cyrillic at all, and the two-family stack it
+  needed could not be made to work through Astro's font API. Onest covers all
+  three scripts on its own, so Kazakh and Russian headlines are set in the same
+  face as English rather than the local languages getting a fallback. Some
+  display character was traded for correctness in the site's own languages.
 - **Playwright e2e runs against `pnpm dev`.** Ten parallel workers race the dev
   server's first-request compile and produce failures that look like design
   faults; workers are capped at four.
