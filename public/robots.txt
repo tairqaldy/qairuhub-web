@@ -1,0 +1,11 @@
+# https://qairuhub.com
+User-agent: *
+Allow: /
+
+# Contributor-facing gates, not content.
+Disallow: /dev/
+
+# The form endpoint answers POST only.
+Disallow: /api/
+
+Sitemap: https://qairuhub.com/sitemap-index.xml

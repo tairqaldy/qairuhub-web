@@ -49,7 +49,15 @@ export default defineConfig({
 		imageService: { build: 'compile', runtime: 'cloudflare-binding' },
 	}),
 
-	integrations: [react(), mdx(), sitemap()],
+	integrations: [
+		react(),
+		mdx(),
+		sitemap({
+			// The /dev routes are noindex gates for contributors, not pages for
+			// readers. Listing them in the sitemap contradicts their own robots tag.
+			filter: (page) => !page.includes('/dev/'),
+		}),
+	],
 
 	/**
 	 * Self-hosted, subset and preloaded by Astro. No request ever leaves for a

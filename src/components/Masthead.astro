@@ -5,16 +5,21 @@ import ThemeToggle from './ThemeToggle.astro'
 interface Props {
 	/** Href prefix of the active section, e.g. "/events". */
 	section?: string
+	/**
+	 * The homepage sets the nameplate at display size as its `h1` (§11 §1).
+	 * Every other page shrinks it to a link home, because there the `h1`
+	 * belongs to the page's own subject.
+	 *
+	 * This is an explicit prop rather than a check on `Astro.url.pathname`:
+	 * with `build.format: 'file'` the index route is not rendered at "/" during
+	 * the static build, so path-sniffing silently produced a homepage with no
+	 * h1 at all in production while working fine in dev.
+	 */
+	home?: boolean
 }
 
-const { section } = Astro.props
-
-/**
- * The homepage sets the nameplate at display size as its `h1` (§11 §1). Every
- * other page shrinks it to a link home, because there the `h1` belongs to the
- * page's own subject.
- */
-const isHome = Astro.url.pathname === '/'
+const { section, home = false } = Astro.props
+const isHome = home
 
 /** Authored per language — never machine-wrapped. Three lines, one motto. */
 const MOTTO = ['Learn it.', 'Build it.', 'Launch it.']

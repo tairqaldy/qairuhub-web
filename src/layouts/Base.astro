@@ -10,16 +10,37 @@ interface Props {
 	description?: string
 	/** Path of the current section, used to mark the active nav item. */
 	section?: string
+	/** True only on the homepage, where the wordmark is the h1. */
+	home?: boolean
 	/** Omit the page from search indexes — used by the /dev routes. */
 	noindex?: boolean
 	/** OG image path, relative to the site root. */
 	image?: string
 }
 
-const { title, description = SITE.description, section, noindex = false, image } = Astro.props
+const {
+	title,
+	description = SITE.description,
+	section,
+	home = false,
+	noindex = false,
+	image,
+} = Astro.props
 
 const pageTitle = title === SITE.name ? `${SITE.name} — ${SITE.tagline}` : `${title} · ${SITE.name}`
-const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://qairuhub.com')
+
+/**
+ * `build.format: 'file'` writes /about.html, and during the static build
+ * `Astro.url.pathname` is that filename rather than the URL the page is served
+ * at. Left alone, every canonical would point at a .html address that is not
+ * the address anyone visits or links to.
+ */
+function canonicalPath(pathname: string): string {
+	if (pathname === '/index.html') return '/'
+	return pathname.replace(/\/index\.html$/, '').replace(/\.html$/, '') || '/'
+}
+
+const canonical = new URL(canonicalPath(Astro.url.pathname), Astro.site ?? 'https://qairuhub.com')
 const ogImage = image ? new URL(image, canonical) : undefined
 ---
 
@@ -73,7 +94,7 @@ const ogImage = image ? new URL(image, canonical) : undefined
 		<a class="skip-link m-button" href="#main">Skip to content</a>
 
 		<div class="page">
-			<Masthead section={section} />
+			<Masthead section={section} home={home} />
 			<main id="main">
 				<slot />
 			</main>
