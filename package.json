@@ -29,7 +29,8 @@
 		"prepare": "lefthook install",
 		"check:fonts": "node scripts/check-font-coverage.mjs",
 		"guard:cobalt": "node scripts/check-cobalt.mjs",
-		"shots": "node scripts/shots.mjs"
+		"shots": "node scripts/shots.mjs",
+		"proposal:pr": "node scripts/open-proposal-pr.mjs"
 	},
 	"dependencies": {
 		"@astrojs/cloudflare": "^14.3.0",
