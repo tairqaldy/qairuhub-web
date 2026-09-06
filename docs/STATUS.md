@@ -106,6 +106,19 @@ wrangler d1 execute qairuhub --remote --command "SELECT created_at, kind, name, 
 - **A hackathon signup page** — the form variant and the endpoint exist; it
   needs a real event to attach to.
 
+## Review findings not yet acted on
+
+A repository-wide adversarial review confirmed 43 findings. The substantive ones
+are fixed; these are the ones deliberately left, with the reason.
+
+| Finding | Why it is still open |
+|---|---|
+| Event upcoming/past is decided at build time | Inherent to a static site. The page can be a day stale, but the **server** now rejects an RSVP for a past or unknown event, which is the part that could actually mislead a student. Add a scheduled rebuild if the staleness starts to matter. |
+| `pnpm e2e` cannot start its own dev server in an agent environment | Astro 7 backgrounds `astro dev`, so Playwright's `webServer` sees the process exit. Run a server yourself and pass `E2E_BASE_URL`. CI is unaffected. |
+| `lang` is never filtered in content queries | Correct today, because only English is published. It has to be addressed before the second language ships, or an index would list the same entry twice. |
+| `ApplyForm` uses `client:load` | On /apply and /contact the form *is* the page's purpose, so deferring it would only delay the thing the visitor came for. |
+| No `/blog` or `/partners` page | Schemas exist and validate; no page renders them yet. Build them when there is content. |
+
 ## Known trade-offs
 
 - **The accent is cobalt**, the most common colour in this category. The design
