@@ -1,0 +1,13 @@
+# Default: core team reviews everything.
+*                       @tairqaldy
+
+# Content contributions get a lighter review path.
+/src/content/           @tairqaldy
+
+# Design system, infrastructure and docs need a core review.
+/src/styles/            @tairqaldy
+/src/components/        @tairqaldy
+/docs/                  @tairqaldy
+/.github/               @tairqaldy
+/wrangler.jsonc         @tairqaldy
+/astro.config.mjs       @tairqaldy

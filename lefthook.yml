@@ -1,0 +1,22 @@
+# Git hooks. Install with `pnpm lefthook install` (runs automatically on pnpm install).
+pre-commit:
+  parallel: true
+  jobs:
+    - name: biome
+      glob: '*.{js,ts,jsx,tsx,mjs,cjs,json,jsonc,css}'
+      run: pnpm exec biome check --write --no-errors-on-unmatched {staged_files}
+      stage_fixed: true
+    - name: no-ai-attribution
+      run: pnpm exec node scripts/check-no-attribution.mjs {staged_files}
+
+commit-msg:
+  jobs:
+    - name: conventional-commit
+      run: pnpm exec node scripts/check-commit-msg.mjs {1}
+
+pre-push:
+  jobs:
+    - name: typecheck
+      run: pnpm typecheck
+    - name: test
+      run: pnpm test -- --run

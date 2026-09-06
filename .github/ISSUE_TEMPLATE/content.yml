@@ -1,0 +1,24 @@
+name: Add or update content
+description: Add an event, project, person, or post. No code required.
+title: '[content] '
+labels: [content]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What are you adding?
+      options: [Event, Project, Person, Blog post, Learn note, Correction]
+    validations: { required: true }
+  - type: textarea
+    id: detail
+    attributes:
+      label: Details
+      description: Everything the entry needs — title, dates, links, people involved.
+    validations: { required: true }
+  - type: checkboxes
+    id: real
+    attributes:
+      label: Accuracy
+      options:
+        - label: Every fact, number, and name here is real and verifiable.
+          required: true

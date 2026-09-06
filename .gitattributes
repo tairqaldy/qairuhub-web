@@ -1,0 +1,12 @@
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
+pnpm-lock.yaml linguist-generated=true -diff
+worker-configuration.d.ts linguist-generated=true -diff
