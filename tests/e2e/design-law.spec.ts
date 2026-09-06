@@ -104,7 +104,9 @@ test.describe('design law', () => {
 					if (await control.evaluate((el) => el.closest('.honeypot') !== null)) continue
 
 					const border = await control.evaluate((el) => getComputedStyle(el).borderTopColor)
-					const expected = await control.evaluate((el, value) => {
+					// Resolve the token to the same rgb() form getComputedStyle returns,
+					// so the comparison is like-for-like rather than oklch vs rgb.
+					const expected = await page.evaluate((value) => {
 						const probe = document.createElement('div')
 						probe.style.color = value
 						document.body.appendChild(probe)
