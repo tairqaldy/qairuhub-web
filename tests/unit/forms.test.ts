@@ -133,3 +133,23 @@ describe('toFieldErrors', () => {
 		expect(Object.values(errors).every((message) => typeof message === 'string')).toBe(true)
 	})
 })
+
+describe('error messages', () => {
+	it('never leaks a raw validator message to the reader', () => {
+		// A missing field triggers a type error, not a length error, and Zod's
+		// default text for that is "expected string, received undefined".
+		const result = membershipSchema.safeParse({})
+		expect(result.success).toBe(false)
+		if (result.success) return
+
+		const messages = Object.values(toFieldErrors(result.error))
+		expect(messages.length).toBeGreaterThan(0)
+		for (const message of messages) {
+			expect(message, `raw validator text leaked: ${message}`).not.toMatch(
+				/expected \w+, received|invalid_type|invalid input:/i,
+			)
+			// Every message should read as a sentence addressed to a person.
+			expect(message[0]).toBe(message[0].toUpperCase())
+		}
+	})
+})

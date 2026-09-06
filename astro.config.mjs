@@ -127,7 +127,14 @@ export default defineConfig({
 	// Warm links in the viewport so navigation feels instant without shipping a router.
 	prefetch: { prefetchAll: true, defaultStrategy: 'viewport' },
 
-	build: { inlineStylesheets: 'auto' },
+	/*
+	 * Emit /about.html rather than /about/index.html, and write links without a
+	 * trailing slash. With directory output, every internal link costs a 307 and
+	 * a second round trip before the page is served.
+	 */
+	trailingSlash: 'never',
+
+	build: { inlineStylesheets: 'auto', format: 'file' },
 
 	vite: {
 		plugins: [tailwindcss()],

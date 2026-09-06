@@ -18,26 +18,21 @@
 	},
 
 	// Form submissions: applications, RSVPs, contact messages.
-	// TODO:INFRA — create with `wrangler d1 create qairuhub` and paste the real
-	// database_id here. Local development works without it.
+	// Created in EEUR, which is the closest region to Astana.
+	// Migrations live in ./migrations — apply with `pnpm db:migrate:remote`.
 	"d1_databases": [
 		{
 			"binding": "DB",
 			"database_name": "qairuhub",
-			"database_id": "REPLACE_WITH_REAL_D1_ID",
+			"database_id": "531fd0e2-6685-42ff-aab3-2b0936234d6a",
 			"migrations_dir": "migrations"
-		}
-	],
-
-	// Original media (photography, logos) before optimisation.
-	// TODO:INFRA — create with `wrangler r2 bucket create qairuhub-media`.
-	"r2_buckets": [
-		{
-			"binding": "MEDIA",
-			"bucket_name": "qairuhub-media"
 		}
 	]
 
 	// SESSION (KV) and IMAGES bindings are provisioned automatically by
-	// @astrojs/cloudflare. Declare them here only if you need to pin their ids.
+	// @astrojs/cloudflare — they do not need declaring here.
+	//
+	// There is deliberately no R2 bucket yet. Images are optimised at build
+	// time from src/assets, so nothing reads from object storage. Add one when
+	// there is original media that needs to outlive a build.
 }

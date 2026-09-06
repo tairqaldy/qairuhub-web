@@ -23,10 +23,19 @@ const optionalText = (max: number) =>
 const honeypot = z.string().max(0, 'rejected').optional().or(z.literal(''))
 
 const contactable = {
-	name: z.string().trim().min(2, 'Please give your full name.').max(80),
-	email: z.email('That does not look like an email address.').max(160),
+	name: z
+		.string({ error: 'Please give your name.' })
+		.trim()
+		.min(2, 'Please give your full name.')
+		.max(80),
+	email: z.email({ error: 'That does not look like an email address.' }).max(160),
 	telegram: optionalText(40),
-	turnstileToken: z.string().min(1, 'Please complete the anti-spam check.'),
+	// The message is set on the type as well as the length: when the field is
+	// absent entirely, Zod reports a type error and would otherwise show the
+	// reader "expected string, received undefined".
+	turnstileToken: z
+		.string({ error: 'Please complete the anti-spam check.' })
+		.min(1, 'Please complete the anti-spam check.'),
 	website: honeypot,
 }
 
@@ -101,12 +110,27 @@ export type FormKind = keyof typeof FORM_SCHEMAS
 /** Field-level errors keyed by field name, ready to render next to inputs. */
 export type FieldErrors = Record<string, string>
 
-/** Flatten a Zod v4 error into one message per field. */
+/**
+ * Zod's own text for a type mismatch reads "Invalid input: expected string,
+ * received undefined". That is a message for a developer, and it must never
+ * reach a student filling in a form.
+ */
+const RAW_VALIDATOR_TEXT = /expected \w+, received|invalid_type|^invalid input/i
+
+/**
+ * Flatten a Zod error into one message per field.
+ *
+ * This is the single point where validation failures become user-facing text,
+ * so the substitution belongs here rather than on each individual field — a
+ * field added later inherits the safe behaviour automatically.
+ */
 export function toFieldErrors(error: z.ZodError): FieldErrors {
 	const errors: FieldErrors = {}
 	for (const issue of error.issues) {
 		const key = issue.path.join('.') || 'form'
-		if (!errors[key]) errors[key] = issue.message
+		if (errors[key]) continue
+
+		errors[key] = RAW_VALIDATOR_TEXT.test(issue.message) ? 'This field is required.' : issue.message
 	}
 	return errors
 }
