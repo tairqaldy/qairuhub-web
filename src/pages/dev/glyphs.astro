@@ -1,0 +1,201 @@
+---
+import Base from '../../layouts/Base.astro'
+
+/**
+ * The trilingual rendering gate.
+ *
+ * The site must render Kazakh, Russian and Latin in all three families. Kazakh
+ * needs nine letter pairs that Russian Cyrillic does not have, and a font can
+ * advertise a `cyrillic` subset while containing none of them — Space Grotesk
+ * does exactly that, which is why Onest sits behind it in the display stack.
+ *
+ * Font files are verified at the glyph level by `pnpm check:fonts`, which reads
+ * each face's real `cmap` table. This page is the visual counterpart: it shows
+ * what actually lands on screen, at the sizes the site uses, in both themes.
+ *
+ * Look for tofu (▯) and for Cyrillic that is visibly a different face from the
+ * Latin beside it at the same size.
+ */
+
+const KAZAKH_ONLY = 'Ә ә Ғ ғ Қ қ Ң ң Ө ө Ұ ұ Ү ү Һ һ І і'
+const LATIN_REFERENCE = 'A E H O K X a e h o k x'
+const RUSSIAN = 'А Б В Г Д Е Ж З И Й К Л М Н О П Р С Т У Ф Х Ц Ч Ш Щ Ъ Ы Ь Э Ю Я'
+
+/**
+ * Sentence-length strings, because letters in isolation hide the spacing and
+ * leading problems that only appear when lines stack.
+ *
+ * These exist to exercise glyphs and line-breaking. They are NOT approved site
+ * copy: no Kazakh or Russian goes on a public page until a native speaker has
+ * written it. See the note rendered below.
+ */
+const SAMPLES = [
+	{
+		lang: 'kk',
+		label: 'Kazakh',
+		text: 'Әрбір ұйғарым қысқаша жазылған. Өңірдегі студенттік қоғамдастық — Астана, Қазақстан.',
+	},
+	{
+		lang: 'ru',
+		label: 'Russian',
+		text: 'Каждое решение записано кратко. Студенческое сообщество — Астана, Казахстан.',
+	},
+	{
+		lang: 'en',
+		label: 'English',
+		text: 'Every decision is written down briefly. A student community — Astana, Kazakhstan.',
+	},
+]
+
+const FAMILIES = [
+	{ name: 'Display — Space Grotesk + Onest', css: 'var(--font-display)', cls: 'd3' },
+	{ name: 'Sans — Geist', css: 'var(--font-sans)', cls: 'body' },
+	{ name: 'Mono — Geist Mono', css: 'var(--font-mono)', cls: 'm-data' },
+]
+
+const SIZES = [96, 34, 13, 11]
+---
+
+<Base title="Glyph check" noindex>
+	<section class="section section--open grid">
+		<div class="rail" aria-hidden="true"></div>
+		<div class="well">
+			<p class="m-eyebrow">Development · not indexed</p>
+			<h1 class="d2 glyphs__title">Glyph check</h1>
+			<p class="lead glyphs__intro">
+				Every face the site ships, against the nine Kazakh letter pairs that plain Russian
+				Cyrillic does not contain. Any empty box here is a font that would render a member's
+				own name as tofu. Toggle the theme control in the masthead to check both.
+			</p>
+			<p class="m-note glyphs__cmd">
+				Glyph tables are checked mechanically by <code>pnpm check:fonts</code>. This page shows
+				what reaches the screen.
+			</p>
+		</div>
+	</section>
+
+	{
+		FAMILIES.map((family) => (
+			<section class="section grid">
+				<div class="rail" aria-hidden="true" />
+				<div class="well">
+					<h2 class="d3 glyphs__family">{family.name}</h2>
+
+					<div class="specimen" style={`font-family: ${family.css}`}>
+						<p class="m-eyebrow specimen__label">Kazakh-only letters</p>
+						<p class="specimen__row specimen__row--large">{KAZAKH_ONLY}</p>
+
+						<p class="m-eyebrow specimen__label">Latin reference, same size</p>
+						<p class="specimen__row specimen__row--large">{LATIN_REFERENCE}</p>
+
+						<p class="m-eyebrow specimen__label">Russian alphabet</p>
+						<p class="specimen__row">{RUSSIAN}</p>
+
+						{SIZES.map((size) => (
+							<>
+								<p class="m-eyebrow specimen__label">{size}px</p>
+								<p class="specimen__row" style={`font-size:${size}px; line-height:1.2`}>
+									{KAZAKH_ONLY}
+								</p>
+							</>
+						))}
+					</div>
+				</div>
+			</section>
+		))
+	}
+
+	<section class="section grid">
+		<div class="rail" aria-hidden="true"></div>
+		<div class="well">
+			<h2 class="d3 glyphs__family">In sentences</h2>
+			<p class="body glyphs__intro">
+				Isolated letters hide spacing problems. These are set at display size, where colliding
+				leading and a mismatch between the Latin and Cyrillic faces show up first.
+			</p>
+			<p class="m-note glyphs__warning">
+				These strings exist to exercise glyphs and line-breaking. They are not approved copy —
+				nothing in Kazakh or Russian reaches a public page until a native speaker has written
+				it.
+			</p>
+			{
+				SAMPLES.map((sample) => (
+					<div class="sample">
+						<p class="m-eyebrow">{sample.label}</p>
+						<p class="d2 sample__text" lang={sample.lang}>
+							{sample.text}
+						</p>
+						<p class="body sample__body" lang={sample.lang}>
+							{sample.text}
+						</p>
+						<p class="m-data sample__mono" lang={sample.lang}>
+							{sample.text}
+						</p>
+					</div>
+				))
+			}
+		</div>
+	</section>
+</Base>
+
+<style>
+	.glyphs__title {
+		margin-block-start: 1rem;
+	}
+
+	.glyphs__intro {
+		margin-block-start: 1.5rem;
+		color: var(--ink-2);
+	}
+
+	.glyphs__cmd,
+	.glyphs__warning {
+		margin-block-start: 1rem;
+	}
+
+	.glyphs__warning {
+		max-inline-size: 62ch;
+		padding: 0.75rem 1rem;
+		border: 1px dashed var(--rule-strong);
+	}
+
+	.glyphs__cmd code {
+		font-family: var(--font-mono);
+		color: var(--ink-2);
+	}
+
+	.glyphs__family {
+		margin-block-end: 1.5rem;
+	}
+
+	.specimen__label {
+		margin-block: 1.5rem 0.5rem;
+		padding-block-end: 0.5rem;
+		border-block-end: 1px solid var(--rule);
+	}
+
+	.specimen__row {
+		word-spacing: 0.15em;
+		overflow-x: auto;
+	}
+
+	.specimen__row--large {
+		font-size: 2rem;
+		line-height: 1.4;
+	}
+
+	.sample {
+		padding-block: 2rem;
+		border-block-end: 1px solid var(--rule);
+	}
+
+	.sample__text {
+		margin-block-start: 0.75rem;
+	}
+
+	.sample__body,
+	.sample__mono {
+		margin-block-start: 1rem;
+		color: var(--ink-2);
+	}
+</style>

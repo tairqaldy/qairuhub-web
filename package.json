@@ -21,13 +21,15 @@
 		"e2e": "playwright test",
 		"e2e:ui": "playwright test --ui",
 		"guard:attribution": "node scripts/check-no-attribution.mjs",
-		"check": "pnpm run typecheck && pnpm run lint && pnpm run guard:attribution && pnpm run test:run",
+		"check": "pnpm run typecheck && pnpm run lint && pnpm run guard:attribution && pnpm run guard:cobalt && pnpm run test:run",
 		"cf:types": "wrangler types",
 		"db:migrate:local": "wrangler d1 migrations apply qairuhub --local",
 		"db:migrate:remote": "wrangler d1 migrations apply qairuhub --remote",
 		"deploy:prod": "astro build && wrangler deploy",
 		"prepare": "lefthook install",
-		"check:fonts": "node scripts/check-font-coverage.mjs"
+		"check:fonts": "node scripts/check-font-coverage.mjs",
+		"guard:cobalt": "node scripts/check-cobalt.mjs",
+		"shots": "node scripts/shots.mjs"
 	},
 	"dependencies": {
 		"@astrojs/cloudflare": "^14.3.0",

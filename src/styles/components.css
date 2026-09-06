@@ -132,14 +132,31 @@
 		--m-eyebrow-size: 0.75rem;
 		--m-eyebrow-track: 0.1em;
 	}
+	/*
+	 * Display line-heights are set for Latin. Cyrillic in Onest carries taller
+	 * ascenders and deeper descenders, and at 0.90/0.98 the lines physically
+	 * collide — visible on /dev/glyphs, which is what that page is for. Cyrillic
+	 * gets more leading and a slightly smaller size so a headline still fits.
+	 */
 	:lang(kk) .d1,
 	:lang(ru) .d1 {
 		font-size: clamp(2.25rem, 5.4vw, 4.75rem);
+		line-height: 1;
 	}
 	:lang(kk) .d2,
 	:lang(ru) .d2 {
 		font-size: clamp(1.75rem, 3.1vw, 3rem);
-		line-height: 0.99;
+		line-height: 1.08;
+	}
+	:lang(kk) .d3,
+	:lang(ru) .d3 {
+		line-height: 1.12;
+	}
+	:lang(kk) .d4,
+	:lang(ru) .d4,
+	:lang(kk) .record__title,
+	:lang(ru) .record__title {
+		line-height: 1.25;
 	}
 
 	/* The eyebrow grammar: NN — WORD. Descended from QAIRU's own numbered
@@ -586,6 +603,13 @@
 	.nav__link[aria-current] {
 		color: var(--ink-1);
 		border-block-end-color: var(--cobalt);
+	}
+
+	/* The language switch uses the same device for the same reason. */
+	.lang__current {
+		color: var(--ink-1);
+		padding-block-end: 2px;
+		border-block-end: 2px solid var(--cobalt);
 	}
 
 	/*

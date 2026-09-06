@@ -33,6 +33,8 @@ const PATTERNS = [
 const ALLOW = [
 	/^scripts\/check-no-attribution\.mjs$/,
 	/^scripts\/check-commit-msg\.mjs$/,
+	// The guard's own tests necessarily contain the strings it looks for.
+	/^tests\/unit\/attribution-guard\.test\.ts$/,
 	/^CLAUDE\.md$/,
 	/^AGENTS\.md$/,
 	/^docs\/research\//,
