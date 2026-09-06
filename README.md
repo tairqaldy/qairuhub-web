@@ -3,7 +3,14 @@
 The website for **QairuHub** — the student-driven builder and AI community at
 Qazaq AI Research University (QAIRU) in Astana.
 
-> Learn it, build it, launch it.
+> Learn it. Build it. Launch it.
+
+**Live at [qairuhub.com](https://qairuhub.com).**
+
+Most sections currently show empty states on purpose: all content in
+`src/content/` is marked `placeholder: true`, and the site refuses to present
+invented people or numbers as real. It fills up as real entries land — see
+**[docs/STATUS.md](docs/STATUS.md)** for what it needs next.
 
 ## Stack
 
@@ -60,7 +67,7 @@ See **[docs/CONTENT.md](docs/CONTENT.md)** for the exact fields and an example.
 | [docs/DESIGN.md](docs/DESIGN.md) | Design system, tokens, and the anti-slop checklist |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Routing, data flow, Cloudflare resources, deploys |
 | [docs/CONTENT.md](docs/CONTENT.md) | Content model, voice, and the contribution workflow |
-| [docs/BUILD-PLAN.md](docs/BUILD-PLAN.md) | Phased build plan and acceptance gates |
+| [docs/STATUS.md](docs/STATUS.md) | What is live, what is left, and open decisions |
 
 ## Branches
 

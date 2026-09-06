@@ -50,18 +50,30 @@ for (const theme of themes) {
 		const page = await context.newPage()
 
 		page.on('console', (message) => {
-			if (message.type() === 'error') problems.push(`console ${message.text().slice(0, 160)}`)
+			if (message.type() !== 'error') return
+			const text = message.text()
+			// Turnstile logs its own formatting noise through console.error.
+			// It is not ours and it is not actionable.
+			if (text.includes('font-size:0;color:transparent')) return
+			problems.push(`console ${text.slice(0, 160)}`)
 		})
 		page.on('pageerror', (error) => problems.push(`pageerror ${String(error).slice(0, 160)}`))
 
 		for (const route of routes) {
 			const url = `${BASE}${route}`
-			const response = await page.goto(url, { waitUntil: 'networkidle' })
+			/*
+			 * Not 'networkidle': the Turnstile widget holds a connection open, so
+			 * a page with a form would never settle and the capture would time out.
+			 */
+			const response = await page.goto(url, { waitUntil: 'domcontentloaded' })
 			if (!response || response.status() >= 400) {
 				problems.push(`${route} returned ${response?.status()}`)
 				continue
 			}
 			await page.evaluate(() => document.fonts.ready)
+			// Let lazy images and any island finish painting before capturing.
+			await page.waitForLoadState('load').catch(() => {})
+			await page.waitForTimeout(1200)
 
 			const name = route === '/' ? 'home' : route.replace(/^\//, '').replace(/\//g, '-')
 			const file = `${OUT}/${name}--${width}--${theme}.png`
