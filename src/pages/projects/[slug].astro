@@ -1,0 +1,141 @@
+---
+import { render } from 'astro:content'
+import type { GetStaticPaths } from 'astro'
+import PageHeader from '../../components/PageHeader.astro'
+import PlaceholderNotice from '../../components/PlaceholderNotice.astro'
+import Plate from '../../components/Plate.astro'
+import Prose from '../../components/Prose.astro'
+import Base from '../../layouts/Base.astro'
+import { getProjects, isPlaceholder, resolveReference, resolveReferences } from '../../lib/content'
+import { formatLongDate } from '../../lib/site'
+
+export const getStaticPaths = (async () => {
+	const projects = await getProjects()
+	return projects.map((project) => ({ params: { slug: project.id }, props: { project } }))
+}) satisfies GetStaticPaths
+
+const { project } = Astro.props
+const { data } = project
+const { Content } = await render(project)
+const [team, program] = await Promise.all([
+	resolveReferences(data.team),
+	resolveReference(data.program),
+])
+
+const STAGE = {
+	idea: 'Idea',
+	prototype: 'Prototype',
+	launched: 'Launched',
+	archived: 'Archived',
+} as const
+
+const facts = [
+	['Stage', STAGE[data.stage]],
+	['Started', formatLongDate(data.started)],
+	program ? ['Programme', program.data.name] : null,
+	team.length ? ['Team', team.map((person) => person.data.name).join(', ')] : null,
+].filter((row): row is [string, string] => row !== null)
+---
+
+<Base title={data.name} section="/projects" description={data.oneLiner}>
+	<PageHeader n="03" eyebrow="Project" title={data.name} standfirst={data.oneLiner} />
+
+	<section class="section section--open grid">
+		<div class="rail" aria-hidden="true"></div>
+
+		<div class="col-lead">
+			{isPlaceholder(project) && <PlaceholderNotice />}
+			<Prose><Content /></Prose>
+		</div>
+
+		<div class="col-gap" aria-hidden="true"></div>
+
+		<aside class="col-aside">
+			<h2 class="m-eyebrow facts__heading">Detail</h2>
+			<dl class="facts">
+				{
+					facts.map(([term, value]) => (
+						<div class="facts__row">
+							<dt class="m-label facts__term">{term}</dt>
+							<dd class="m-data facts__value">{value}</dd>
+						</div>
+					))
+				}
+			</dl>
+
+			{
+				(data.repo || data.demo) && (
+					<div class="facts__links">
+						{data.demo && (
+							<a class="link-action m-button" href={data.demo} rel="noopener" target="_blank">
+								Live demo <span aria-hidden="true">↗</span>
+							</a>
+						)}
+						{data.repo && (
+							<a class="link-action m-button" href={data.repo} rel="noopener" target="_blank">
+								Source <span aria-hidden="true">↗</span>
+							</a>
+						)}
+					</div>
+				)
+			}
+
+			{
+				data.tags.length > 0 && (
+					<ul class="facts__tags">
+						{data.tags.map((tag) => (
+							<li class="tag m-note">{tag}</li>
+						))}
+					</ul>
+				)
+			}
+		</aside>
+	</section>
+
+	<Plate />
+</Base>
+
+<style>
+	.facts__heading {
+		padding-block-end: 0.75rem;
+		border-block-end: 1px solid var(--rule-2);
+	}
+
+	.facts__row {
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+		padding-block: 0.6rem;
+		border-block-end: 1px solid var(--rule);
+	}
+
+	.facts__term {
+		color: var(--ink-3);
+	}
+
+	.facts__value {
+		text-align: end;
+	}
+
+	.facts__links {
+		display: flex;
+		flex-direction: column;
+		align-items: start;
+		gap: 0.75rem;
+		margin-block-start: 1.5rem;
+	}
+
+	.facts__tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.375rem;
+		margin-block-start: 1.5rem;
+	}
+
+	.tag {
+		padding: 0.15rem 0.4rem;
+		border: 1px solid var(--rule);
+		border-radius: var(--radius-inline);
+		color: var(--ink-3);
+	}
+</style>

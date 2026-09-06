@@ -1,0 +1,61 @@
+---
+import EmptyState from '../components/EmptyState.astro'
+import PageHeader from '../components/PageHeader.astro'
+import PeopleStrip from '../components/PeopleStrip.astro'
+import Plate from '../components/Plate.astro'
+import Base from '../layouts/Base.astro'
+import { getAlumni, getPeople } from '../lib/content'
+
+const [people, alumni] = await Promise.all([getPeople(), getAlumni()])
+---
+
+<Base
+	title="People"
+	section="/people"
+	description="The students who run QairuHub, and what each of them builds."
+>
+	<PageHeader
+		n="05"
+		eyebrow="People"
+		title="Who runs this."
+		standfirst="QairuHub is run by students, not staff. Everyone listed here is a real member who has agreed to appear, with their real role rather than an inflated title."
+	/>
+
+	<Plate />
+
+	<section class="section grid">
+		<div class="rail" aria-hidden="true"><span class="dn">05</span></div>
+		<div class="well">
+			{
+				people.length > 0 ? (
+					<PeopleStrip people={people} />
+				) : (
+					<EmptyState
+						title="The roster is not published yet."
+						body="Members appear here once they have written their own entry and agreed to be listed. We do not list people without asking."
+					/>
+				)
+			}
+		</div>
+	</section>
+
+	{
+		alumni.length > 0 && (
+			<section class="section grid">
+				<div class="rail" aria-hidden="true" />
+				<div class="well">
+					<h2 class="eyebrow m-eyebrow people__heading">
+						<span>Alumni</span>
+					</h2>
+					<PeopleStrip people={alumni} />
+				</div>
+			</section>
+		)
+	}
+</Base>
+
+<style>
+	.people__heading {
+		margin-block-end: 1.5rem;
+	}
+</style>

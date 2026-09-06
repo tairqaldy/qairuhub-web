@@ -1,0 +1,134 @@
+---
+import Base from '../layouts/Base.astro'
+import { getLearnEntries, getProjects, getUpcomingEvents } from '../lib/content'
+import { formatLongDate } from '../lib/site'
+
+/**
+ * The 404 is left-aligned on the rail like every other page, with no
+ * illustration and nothing centred. It carries the same live facts the desk
+ * does, so a wrong link still lands somewhere useful.
+ */
+const [events, projects, notes] = await Promise.all([
+	getUpcomingEvents(),
+	getProjects(),
+	getLearnEntries(),
+])
+
+const nextEvent = events[0]
+const latestProject = projects[0]
+const latestNote = notes[0]
+---
+
+<Base title="Page not found" noindex>
+	<section class="section section--open grid">
+		<div class="rail" aria-hidden="true"><span class="dn">404</span></div>
+
+		<div class="col-lead">
+			<p class="m-eyebrow">Error 404</p>
+			<h1 class="d2 notfound__title">No such page.</h1>
+			<p class="lead notfound__body">
+				The link is wrong, or the page moved. Nothing here is a dead end — the sections below
+				are all live.
+			</p>
+
+			<ul class="notfound__links">
+				<li><a class="d5" href="/">Home</a></li>
+				<li><a class="d5" href="/events">What is on</a></li>
+				<li><a class="d5" href="/projects">The project registry</a></li>
+				<li><a class="d5" href="/apply">Apply to join</a></li>
+			</ul>
+		</div>
+
+		<div class="col-gap" aria-hidden="true"></div>
+
+		<aside class="col-aside">
+			<h2 class="m-eyebrow aside__heading">Latest</h2>
+			<ul class="latest">
+				{
+					nextEvent && (
+						<li class="latest__item">
+							<p class="m-label latest__label">Next session</p>
+							<a class="d5" href={`/events/${nextEvent.id}`}>
+								{nextEvent.data.title}
+							</a>
+							<p class="m-data latest__meta">{formatLongDate(nextEvent.data.starts)}</p>
+						</li>
+					)
+				}
+				{
+					latestProject && (
+						<li class="latest__item">
+							<p class="m-label latest__label">Latest build</p>
+							<a class="d5" href={`/projects/${latestProject.id}`}>
+								{latestProject.data.name}
+							</a>
+						</li>
+					)
+				}
+				{
+					latestNote && (
+						<li class="latest__item">
+							<p class="m-label latest__label">Latest note</p>
+							<a class="d5" href={`/learn/${latestNote.id}`}>
+								{latestNote.data.title}
+							</a>
+						</li>
+					)
+				}
+			</ul>
+		</aside>
+	</section>
+</Base>
+
+<style>
+	.notfound__title {
+		margin-block-start: 1rem;
+	}
+
+	.notfound__body {
+		margin-block: 1.5rem 2.5rem;
+		color: var(--ink-2);
+	}
+
+	.notfound__links {
+		border-block-start: 1px solid var(--rule);
+	}
+
+	.notfound__links li {
+		border-block-end: 1px solid var(--rule);
+	}
+
+	.notfound__links a {
+		display: block;
+		padding-block: 1rem;
+		text-decoration: none;
+	}
+
+	.notfound__links a:hover {
+		color: var(--ink-1);
+	}
+
+	.aside__heading {
+		padding-block-end: 0.75rem;
+		border-block-end: 1px solid var(--rule-2);
+	}
+
+	.latest__item {
+		padding-block: 1rem;
+		border-block-end: 1px solid var(--rule);
+	}
+
+	.latest__label {
+		color: var(--ink-3);
+		margin-block-end: 0.35rem;
+	}
+
+	.latest__item a {
+		text-decoration: none;
+	}
+
+	.latest__meta {
+		margin-block-start: 0.35rem;
+		color: var(--ink-3);
+	}
+</style>

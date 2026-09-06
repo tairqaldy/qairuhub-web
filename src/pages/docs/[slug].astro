@@ -1,0 +1,112 @@
+---
+import { render } from 'astro:content'
+import type { GetStaticPaths } from 'astro'
+import PageHeader from '../../components/PageHeader.astro'
+import PlaceholderNotice from '../../components/PlaceholderNotice.astro'
+import Prose from '../../components/Prose.astro'
+import Base from '../../layouts/Base.astro'
+import { getDocs, isPlaceholder } from '../../lib/content'
+import { formatLongDate } from '../../lib/site'
+
+export const getStaticPaths = (async () => {
+	const docs = await getDocs()
+	return docs.map((doc) => ({ params: { slug: doc.id }, props: { doc, docs } }))
+}) satisfies GetStaticPaths
+
+const { doc, docs } = Astro.props
+const { data } = doc
+const { Content, headings } = await render(doc)
+
+/* Only h2s: a deeper contents list on a governance document is noise. */
+const toc = headings.filter((heading: { depth: number }) => heading.depth === 2)
+const siblings = docs.filter(
+	(other) => other.data.category === data.category && other.id !== doc.id,
+)
+---
+
+<Base title={data.title} section="/docs" description={data.summary}>
+	<PageHeader n="06" eyebrow={data.category} title={data.title} standfirst={data.summary} />
+
+	<section class="section section--open grid">
+		<div class="rail" aria-hidden="true"></div>
+
+		<div class="col-lead">
+			<p class="m-data doc__updated">Last updated {formatLongDate(data.updatedDate)}</p>
+			{isPlaceholder(doc) && <PlaceholderNotice />}
+			<Prose><Content /></Prose>
+		</div>
+
+		<div class="col-gap" aria-hidden="true"></div>
+
+		<aside class="col-aside">
+			{
+				toc.length > 0 && (
+					<nav aria-labelledby="toc-heading">
+						<h2 class="m-eyebrow aside__heading" id="toc-heading">
+							Contents
+						</h2>
+						<ul class="toc">
+							{toc.map((heading: { slug: string; text: string }) => (
+								<li>
+									<a class="m-label toc__link" href={`#${heading.slug}`}>
+										{heading.text}
+									</a>
+								</li>
+							))}
+						</ul>
+					</nav>
+				)
+			}
+
+			{
+				siblings.length > 0 && (
+					<>
+						<h2 class="m-eyebrow aside__heading aside__heading--spaced">Related</h2>
+						<ul class="toc">
+							{siblings.map((other) => (
+								<li>
+									<a class="m-label toc__link" href={`/docs/${other.id}`}>
+										{other.data.title}
+									</a>
+								</li>
+							))}
+						</ul>
+					</>
+				)
+			}
+		</aside>
+	</section>
+</Base>
+
+<style>
+	.doc__updated {
+		margin-block-end: 2rem;
+		padding-block-end: 1rem;
+		border-block-end: 1px solid var(--rule);
+		color: var(--ink-3);
+	}
+
+	.aside__heading {
+		padding-block-end: 0.75rem;
+		border-block-end: 1px solid var(--rule-2);
+	}
+
+	.aside__heading--spaced {
+		margin-block-start: 2.5rem;
+	}
+
+	.toc li {
+		border-block-end: 1px solid var(--rule);
+	}
+
+	.toc__link {
+		display: block;
+		padding-block: 0.7rem;
+		text-decoration: none;
+		color: var(--ink-2);
+	}
+
+	.toc__link:hover {
+		color: var(--ink-1);
+	}
+</style>

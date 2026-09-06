@@ -1,0 +1,50 @@
+---
+interface Props {
+	/** Two-digit ordinal matching the section index, when the page is one. */
+	n?: string
+	eyebrow: string
+	title: string
+	standfirst?: string
+}
+
+const { n, eyebrow, title, standfirst } = Astro.props
+---
+
+{/*
+  Every inner page opens the same way: the numbered eyebrow, the title at
+  display size, and one standfirst paragraph. Left-aligned on the rail like
+  everything else — nothing on this site is centred.
+*/}
+<header class="section section--open grid page-header">
+	<div class="rail" aria-hidden="true">{n && <span class="dn">{n}</span>}</div>
+
+	<div class="well page-header__well">
+		<p class="eyebrow m-eyebrow">
+			{n && <span class="eyebrow__n">{n}</span>}
+			{n && <span aria-hidden="true">—</span>}
+			<span>{eyebrow}</span>
+		</p>
+
+		<h1 class="d2 page-header__title">{title}</h1>
+
+		{standfirst && <p class="lead page-header__standfirst">{standfirst}</p>}
+
+		<slot />
+	</div>
+</header>
+
+<style>
+	.page-header {
+		padding-block: clamp(2rem, 5vw, 4rem) clamp(1.5rem, 3vw, 2.25rem);
+	}
+
+	.page-header__title {
+		margin-block-start: 1rem;
+		max-inline-size: 20ch;
+	}
+
+	.page-header__standfirst {
+		margin-block-start: 1.5rem;
+		color: var(--ink-2);
+	}
+</style>

@@ -1,0 +1,77 @@
+---
+import EmptyState from '../../components/EmptyState.astro'
+import EventRow from '../../components/EventRow.astro'
+import PageHeader from '../../components/PageHeader.astro'
+import Plate from '../../components/Plate.astro'
+import Base from '../../layouts/Base.astro'
+import { getPastEvents, getUpcomingEvents } from '../../lib/content'
+import { SITE } from '../../lib/site'
+
+const [upcoming, past] = await Promise.all([getUpcomingEvents(), getPastEvents()])
+---
+
+<Base
+	title="Events"
+	section="/events"
+	description="AI Fridays, hackathon sprints and workshops at QAIRU in Astana. Most sessions are open to anyone — no application needed."
+>
+	<PageHeader
+		n="02"
+		eyebrow="Events"
+		title="What is on."
+		standfirst="Sessions run weekly during term. Anything marked walk-in is open to anyone at QAIRU — turn up, bring a laptop, no application. Sprints and workshops with limited places need an RSVP."
+	/>
+
+	<Plate />
+
+	<section class="section grid">
+		<div class="rail" aria-hidden="true"><span class="dn">02</span></div>
+		<div class="well">
+			<h2 class="eyebrow m-eyebrow events__heading">
+				<span class="eyebrow__n">A</span><span aria-hidden="true">—</span><span>Upcoming</span>
+			</h2>
+			{
+				upcoming.length > 0 ? (
+					<div class="record">
+						{upcoming.map((event) => (
+							<EventRow event={event} />
+						))}
+					</div>
+				) : (
+					<EmptyState
+						title="Nothing is scheduled right now."
+						body="Sessions pause between terms. The next dates go into the Telegram group first, then here."
+						actionLabel="Join the group"
+						actionHref={SITE.social.telegram}
+					/>
+				)
+			}
+		</div>
+	</section>
+
+	{
+		past.length > 0 && (
+			<section class="section grid">
+				<div class="rail" aria-hidden="true" />
+				<div class="well">
+					<h2 class="eyebrow m-eyebrow events__heading">
+						<span class="eyebrow__n">B</span>
+						<span aria-hidden="true">—</span>
+						<span>Past</span>
+					</h2>
+					<div class="record">
+						{past.map((event) => (
+							<EventRow event={event} />
+						))}
+					</div>
+				</div>
+			</section>
+		)
+	}
+</Base>
+
+<style>
+	.events__heading {
+		margin-block-end: 1.5rem;
+	}
+</style>

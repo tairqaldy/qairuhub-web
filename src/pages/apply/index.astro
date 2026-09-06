@@ -1,0 +1,97 @@
+---
+import ApplyForm from '../../components/ApplyForm'
+import PageHeader from '../../components/PageHeader.astro'
+import Base from '../../layouts/Base.astro'
+import { getPrograms } from '../../lib/content'
+
+const programs = await getPrograms()
+const now = new Date()
+
+/* The accelerator route only appears when its intake is genuinely open. */
+const acceleratorOpen = programs.some(
+	(program) =>
+		program.data.unit === 'accelerator' &&
+		program.data.intakeCloses !== undefined &&
+		program.data.intakeCloses > now,
+)
+---
+
+<Base
+	title="Apply"
+	section="/apply"
+	description="Apply to join QairuHub. Rolling intake, reviewed weekly, open to any faculty and any level of experience."
+>
+	<PageHeader
+		eyebrow="Apply"
+		title="Join QairuHub."
+		standfirst="Membership is open continuously and reviewed weekly. There is no test and no minimum experience — we are looking for people who want to build something, not people who already can."
+	/>
+
+	<section class="section section--open grid">
+		<div class="rail" aria-hidden="true"></div>
+
+		<div class="col-lead">
+			<ApplyForm variant="membership" client:load />
+		</div>
+
+		<div class="col-gap" aria-hidden="true"></div>
+
+		<aside class="col-aside">
+			<h2 class="m-eyebrow aside__heading">Before you write</h2>
+			<ul class="aside__list">
+				<li class="small">
+					Be specific rather than impressive. A bot that answers questions about the timetable
+					beats being passionate about AI.
+				</li>
+				<li class="small">Nothing to link to is fine. Most people join with nothing built yet.</li>
+				<li class="small">
+					You can come to a Friday session before you hear back. They are open to anyone.
+				</li>
+			</ul>
+
+			<h2 class="m-eyebrow aside__heading aside__heading--spaced">Other routes</h2>
+			<ul class="aside__list">
+				<li class="small">
+					Hackathon sign-ups open per event, on <a href="/events">the event page</a> itself.
+				</li>
+				<li class="small">
+					{
+						acceleratorOpen ? (
+							<>
+								The <a href="/apply/accelerator">accelerator</a> is accepting teams now.
+							</>
+						) : (
+							<>
+								The accelerator is not open yet. It is for teams that already have a working
+								prototype — see <a href="/programs">programmes</a>.
+							</>
+						)
+					}
+				</li>
+				<li class="small">Partnership or press: <a href="/contact">contact the team</a>.</li>
+			</ul>
+		</aside>
+	</section>
+</Base>
+
+<style>
+	.aside__heading {
+		padding-block-end: 0.75rem;
+		border-block-end: 1px solid var(--rule-2);
+	}
+
+	.aside__heading--spaced {
+		margin-block-start: 2.5rem;
+	}
+
+	.aside__list {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.aside__list li {
+		padding-block: 0.9rem;
+		border-block-end: 1px solid var(--rule);
+		color: var(--ink-2);
+	}
+</style>

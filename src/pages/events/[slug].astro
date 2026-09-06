@@ -1,0 +1,131 @@
+---
+import { render } from 'astro:content'
+import type { GetStaticPaths } from 'astro'
+import PageHeader from '../../components/PageHeader.astro'
+import PlaceholderNotice from '../../components/PlaceholderNotice.astro'
+import Plate from '../../components/Plate.astro'
+import Prose from '../../components/Prose.astro'
+import RsvpForm from '../../components/RsvpForm'
+import Base from '../../layouts/Base.astro'
+import {
+	getPastEvents,
+	getUpcomingEvents,
+	isPlaceholder,
+	isUpcoming,
+	resolveReferences,
+} from '../../lib/content'
+import { formatLongDate, formatTime } from '../../lib/site'
+
+export const getStaticPaths = (async () => {
+	const [upcoming, past] = await Promise.all([getUpcomingEvents(), getPastEvents()])
+	return [...upcoming, ...past].map((event) => ({ params: { slug: event.id }, props: { event } }))
+}) satisfies GetStaticPaths
+
+const { event } = Astro.props
+const { data } = event
+const { Content } = await render(event)
+const hosts = await resolveReferences(data.hosts)
+
+const ahead = isUpcoming(event)
+const where = data.room ? `${data.location}, ${data.room}` : data.location
+
+const facts = [
+	['Date', formatLongDate(data.starts)],
+	[
+		'Time',
+		data.ends ? `${formatTime(data.starts)}–${formatTime(data.ends)}` : formatTime(data.starts),
+	],
+	['Where', where],
+	['Entry', data.walkIn ? 'Walk in — no application' : 'RSVP required'],
+	data.capacity ? ['Places', String(data.capacity)] : null,
+	hosts.length ? ['Hosted by', hosts.map((h) => h.data.name).join(', ')] : null,
+].filter((row): row is [string, string] => row !== null)
+---
+
+<Base title={data.title} section="/events" description={data.summary}>
+	<PageHeader n="02" eyebrow={ahead ? 'Upcoming event' : 'Past event'} title={data.title} standfirst={data.summary} />
+
+	<section class="section section--open grid">
+		<div class="rail" aria-hidden="true"></div>
+
+		<div class="col-lead">
+			{isPlaceholder(event) && <PlaceholderNotice />}
+			<Prose><Content /></Prose>
+		</div>
+
+		<div class="col-gap" aria-hidden="true"></div>
+
+		<aside class="col-aside">
+			<h2 class="m-eyebrow facts__heading">Detail</h2>
+			<dl class="facts">
+				{
+					facts.map(([term, value]) => (
+						<div class="facts__row">
+							<dt class="m-label facts__term">{term}</dt>
+							<dd class="m-data facts__value">{value}</dd>
+						</div>
+					))
+				}
+			</dl>
+
+			{
+				ahead ? (
+					data.walkIn ? (
+						<p class="small facts__note">
+							No sign-up needed. Turn up at {formatTime(data.starts)} — the room is open from
+							ten minutes before.
+						</p>
+					) : (
+						<div class="facts__form">
+							<RsvpForm eventSlug={event.id} eventTitle={data.title} client:visible />
+						</div>
+					)
+				) : (
+					data.recordingUrl && (
+						<a class="link-action m-button facts__cta" href={data.recordingUrl} rel="noopener" target="_blank">
+							Watch the recording <span aria-hidden="true">↗</span>
+						</a>
+					)
+				)
+			}
+		</aside>
+	</section>
+
+	<Plate />
+</Base>
+
+<style>
+	.facts__heading {
+		padding-block-end: 0.75rem;
+		border-block-end: 1px solid var(--rule-2);
+	}
+
+	.facts__row {
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+		padding-block: 0.6rem;
+		border-block-end: 1px solid var(--rule);
+	}
+
+	.facts__term {
+		color: var(--ink-3);
+	}
+
+	.facts__value {
+		text-align: end;
+	}
+
+	.facts__note,
+	.facts__form {
+		margin-block-start: 1.5rem;
+	}
+
+	.facts__note {
+		color: var(--ink-2);
+	}
+
+	.facts__cta {
+		margin-block-start: 1.5rem;
+	}
+</style>

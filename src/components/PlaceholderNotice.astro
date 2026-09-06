@@ -1,0 +1,41 @@
+---
+/**
+ * Marks an entry that is a structural template rather than a real record.
+ *
+ * These never reach a production build — src/lib/content.ts filters them out —
+ * but in `astro dev` they must be unmistakable, so nobody reviews a page and
+ * believes the sample data is real.
+ */
+---
+
+<p class="notice m-label">
+	<span class="notice__tag">Placeholder</span>
+	This entry is a template, not a real record. It is excluded from production builds.
+	Remove <code>placeholder: true</code> from its frontmatter once it describes something real.
+</p>
+
+<style>
+	.notice {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem 0.75rem;
+		margin-block-end: 1.5rem;
+		padding: 0.75rem 1rem;
+		border: 1px dashed var(--rule-strong);
+		color: var(--ink-3);
+	}
+
+	.notice__tag {
+		padding: 0.15rem 0.4rem;
+		border: 1px solid var(--rule-strong);
+		border-radius: var(--radius-inline);
+		color: var(--ink-1);
+		text-transform: uppercase;
+	}
+
+	.notice code {
+		font-family: var(--font-mono);
+		color: var(--ink-2);
+	}
+</style>

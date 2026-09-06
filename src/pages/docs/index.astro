@@ -1,0 +1,110 @@
+---
+import EmptyState from '../../components/EmptyState.astro'
+import PageHeader from '../../components/PageHeader.astro'
+import Base from '../../layouts/Base.astro'
+import { getDocs } from '../../lib/content'
+import { formatShortDate } from '../../lib/site'
+
+const docs = await getDocs()
+
+const CATEGORY_LABEL = {
+	governance: 'Governance',
+	process: 'Process',
+	reference: 'Reference',
+} as const
+
+/* Group by category, keeping only categories that actually have entries. */
+const grouped = (['governance', 'process', 'reference'] as const)
+	.map((category) => ({
+		category,
+		label: CATEGORY_LABEL[category],
+		entries: docs.filter((doc) => doc.data.category === category),
+	}))
+	.filter((group) => group.entries.length > 0)
+---
+
+<Base
+	title="Documents"
+	section="/docs"
+	description="The QairuHub charter, decision records and process documents. Open by default."
+>
+	<PageHeader
+		n="06"
+		eyebrow="Documents"
+		title="How decisions get made."
+		standfirst="The charter, the process notes, and the record of what was decided and why. Open by default — if something is not here, it is either not written down yet or we have said why it is private."
+	/>
+
+	{
+		grouped.length > 0 ? (
+			grouped.map((group, i) => (
+				<section class="section grid">
+					<div class="rail" aria-hidden="true">
+						<span class="dn">{String(i + 1).padStart(2, '0')}</span>
+					</div>
+					<div class="well">
+						<h2 class="eyebrow m-eyebrow docs__heading">
+							<span>{group.label}</span>
+						</h2>
+						<div class="record">
+							{group.entries.map((doc) => (
+								<article class="doc">
+									<div class="doc__meta">
+										<span class="m-data">{formatShortDate(doc.data.updatedDate)}</span>
+									</div>
+									<div>
+										<h3 class="record__title">
+											<a href={`/docs/${doc.id}`}>{doc.data.title}</a>
+										</h3>
+										<p class="body doc__summary">{doc.data.summary}</p>
+									</div>
+								</article>
+							))}
+						</div>
+					</div>
+				</section>
+			))
+		) : (
+			<section class="section grid">
+				<div class="rail" aria-hidden="true" />
+				<div class="well">
+					<EmptyState
+						title="No documents published yet."
+						body="The charter is being written. It will be published here in full, along with the decisions made along the way."
+					/>
+				</div>
+			</section>
+		)
+	}
+</Base>
+
+<style>
+	.docs__heading {
+		margin-block-end: 1.5rem;
+	}
+
+	.doc {
+		display: grid;
+		grid-template-columns: 72px 1fr;
+		gap: 0.75rem var(--gutter);
+		align-items: start;
+		padding-block: 1.25rem;
+		border-block-end: 1px solid var(--rule);
+	}
+
+	.doc__meta {
+		color: var(--ink-3);
+		padding-block-start: 0.3rem;
+	}
+
+	.doc__summary {
+		margin-block-start: 0.35rem;
+		color: var(--ink-2);
+	}
+
+	@media (width < 768px) {
+		.doc {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

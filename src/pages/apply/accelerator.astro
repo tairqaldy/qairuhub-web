@@ -1,0 +1,119 @@
+---
+import ApplyForm from '../../components/ApplyForm'
+import PageHeader from '../../components/PageHeader.astro'
+import Base from '../../layouts/Base.astro'
+import { getPrograms } from '../../lib/content'
+import { formatLongDate } from '../../lib/site'
+
+const programs = await getPrograms()
+const accelerator = programs.find((program) => program.data.unit === 'accelerator')
+const now = new Date()
+
+/*
+ * The form only exists while the intake is genuinely open. A closed programme
+ * shows the closed state and the next best route — it never collects
+ * applications it cannot act on.
+ */
+const open = accelerator?.data.intakeCloses !== undefined && accelerator.data.intakeCloses > now
+---
+
+<Base
+	title="Apply to the accelerator"
+	section="/apply"
+	description="Apply to the QairuHub accelerator with a working prototype and a team."
+>
+	<PageHeader
+		eyebrow="Apply · Accelerator"
+		title="Take it to launch."
+		standfirst="The accelerator is for teams that already have something running. Eight weeks, part time, ending in a public launch."
+	/>
+
+	<section class="section section--open grid">
+		<div class="rail" aria-hidden="true"></div>
+
+		<div class="col-lead">
+			{
+				open ? (
+					<ApplyForm variant="accelerator" client:load />
+				) : (
+					<div class="closed">
+						<p class="m-eyebrow">Closed</p>
+						<p class="d3 closed__title">Applications are not open yet.</p>
+						<p class="body closed__body">
+							{accelerator?.data.startsLabel
+								? `The first cohort starts ${accelerator.data.startsLabel}. `
+								: ''}
+							We announce the intake in the Telegram group and here. In the meantime the fastest
+							route in is to start building at a Friday session — most accelerator teams form
+							there.
+						</p>
+						<a class="link-action m-button closed__cta" href="/apply">
+							Apply for membership instead <span aria-hidden="true">→</span>
+						</a>
+					</div>
+				)
+			}
+		</div>
+
+		<div class="col-gap" aria-hidden="true"></div>
+
+		<aside class="col-aside">
+			<h2 class="m-eyebrow aside__heading">What we look for</h2>
+			<ul class="aside__list">
+				<li class="small">Something that runs. A demo beats a deck.</li>
+				<li class="small">At least two people who will still be there in eight weeks.</li>
+				<li class="small">A real user, or a clear plan to find one.</li>
+			</ul>
+
+			{
+				accelerator?.data.intakeCloses && (
+					<p class="m-data aside__date">
+						Intake closes {formatLongDate(accelerator.data.intakeCloses)}
+					</p>
+				)
+			}
+		</aside>
+	</section>
+</Base>
+
+<style>
+	.closed {
+		padding-block-start: 1.5rem;
+		border-block-start: 2px solid var(--rule-2);
+		max-inline-size: 60ch;
+	}
+
+	.closed__title {
+		margin-block-start: 0.75rem;
+	}
+
+	.closed__body {
+		margin-block-start: 1rem;
+		color: var(--ink-2);
+	}
+
+	.closed__cta {
+		margin-block-start: 1.75rem;
+	}
+
+	.aside__heading {
+		padding-block-end: 0.75rem;
+		border-block-end: 1px solid var(--rule-2);
+	}
+
+	.aside__list {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.aside__list li {
+		padding-block: 0.9rem;
+		border-block-end: 1px solid var(--rule);
+		color: var(--ink-2);
+	}
+
+	.aside__date {
+		margin-block-start: 1.25rem;
+		color: var(--ink-3);
+	}
+</style>

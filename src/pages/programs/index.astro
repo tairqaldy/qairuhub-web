@@ -1,0 +1,45 @@
+---
+import EmptyState from '../../components/EmptyState.astro'
+import PageHeader from '../../components/PageHeader.astro'
+import Plate from '../../components/Plate.astro'
+import ProgramRow from '../../components/ProgramRow.astro'
+import Base from '../../layouts/Base.astro'
+import { getPrograms } from '../../lib/content'
+
+const programs = await getPrograms()
+---
+
+<Base
+	title="Programmes"
+	section="/programs"
+	description="The four programmes QairuHub runs: hands-on AI building, hackathon sprints, the accelerator, and peer learning."
+>
+	<PageHeader
+		n="01"
+		eyebrow="Programmes"
+		title="Four ways in."
+		standfirst="You do not have to pick one. Most members start at a Friday session and end up in two or three of these. Every programme states its commitment and its entry bar plainly — if there is no bar, it says so."
+	/>
+
+	<Plate />
+
+	<section class="section grid">
+		<div class="rail" aria-hidden="true"></div>
+		<div class="well">
+			{
+				programs.length > 0 ? (
+					<div class="record">
+						{programs.map((program, i) => (
+							<ProgramRow program={program} index={i} />
+						))}
+					</div>
+				) : (
+					<EmptyState
+						title="No programmes are published yet."
+						body="Programme records appear here once they are added to the repository."
+					/>
+				)
+			}
+		</div>
+	</section>
+</Base>

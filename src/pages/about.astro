@@ -1,0 +1,231 @@
+---
+import PageHeader from '../components/PageHeader.astro'
+import Plate from '../components/Plate.astro'
+import Base from '../layouts/Base.astro'
+import { getPrograms } from '../lib/content'
+import { SITE } from '../lib/site'
+
+const programs = await getPrograms()
+
+const VALUES = [
+	{
+		title: 'Ship over talk',
+		body: 'A working thing you are embarrassed by is worth more than a plan you are proud of. Sessions end with something running.',
+	},
+	{
+		title: 'Learn in public',
+		body: 'Every session gets written up. Everything we build is in the open. If you got stuck, say so — it is the most useful thing you can publish.',
+	},
+	{
+		title: 'Help the next student',
+		body: 'The person a year behind you needs what you needed. Peer review, notes, and answering questions in the group count as work here.',
+	},
+	{
+		title: 'Real projects, real users',
+		body: 'We would rather have one tool ten students actually use than five demos nobody opens.',
+	},
+	{
+		title: 'Open by default',
+		body: 'Membership, the charter, the decisions and the code. If something has to be private, we say why.',
+	},
+]
+---
+
+<Base
+	title="About"
+	section="/about"
+	description="What QairuHub is, how it is organised, and how to contribute. A student-run builder community at QAIRU in Astana."
+>
+	<PageHeader
+		eyebrow="About"
+		title="A student-run builder community."
+		standfirst="QairuHub is not a course and not a club that meets to discuss things. It is a group of students at QAIRU who build with AI in the open, publish what they learn, and help each other ship."
+	/>
+
+	<Plate />
+
+	<section class="section grid">
+		<div class="rail" aria-hidden="true"><span class="dn">A</span></div>
+		<div class="col-lead">
+			<h2 class="d3">What we do</h2>
+			<p class="longform about__body">
+				We meet weekly during term. Most sessions are two hours: someone shows something they
+				built, then everyone works. Between sessions people build in the open, review each
+				other's code, and write up what they figured out.
+			</p>
+			<p class="longform about__body">
+				{SITE.university.name} is the parent institution — QairuHub is the students' own thing,
+				run by students, with the university providing the room and the lab access. That
+				distinction matters: nobody here is graded, and nothing is compulsory.
+			</p>
+			<p class="longform about__body">
+				If you want to know what actually gets built, the <a href="/projects">registry</a> is
+				the honest answer. Every project is listed at its real stage.
+			</p>
+		</div>
+
+		<div class="col-gap" aria-hidden="true"></div>
+
+		<aside class="col-aside">
+			<h2 class="m-eyebrow aside__heading">In one line</h2>
+			<p class="d5 aside__motto">{SITE.tagline}</p>
+			<p class="small aside__note">
+				Not a slogan we picked — it is the order things happen in.
+			</p>
+		</aside>
+	</section>
+
+	<section class="section grid">
+		<div class="rail" aria-hidden="true"><span class="dn">B</span></div>
+		<div class="well">
+			<h2 class="d3 about__heading">How we work</h2>
+			<ol class="values">
+				{
+					VALUES.map((value, i) => (
+						<li class="values__item">
+							<span class="m-eyebrow values__n" aria-hidden="true">
+								{String(i + 1).padStart(2, '0')}
+							</span>
+							<div>
+								<p class="d5">{value.title}</p>
+								<p class="body values__body">{value.body}</p>
+							</div>
+						</li>
+					))
+				}
+			</ol>
+		</div>
+	</section>
+
+	<section class="section grid">
+		<div class="rail" aria-hidden="true"><span class="dn">C</span></div>
+		<div class="well">
+			<h2 class="d3 about__heading">How it is organised</h2>
+			<p class="body about__intro">
+				One umbrella organisation with sub-units. Each runs its own sessions and has its own
+				lead, and members move between them freely.
+			</p>
+
+			<div class="record">
+				{
+					programs.map((program) => (
+						<article class="unit">
+							<h3 class="record__title">
+								<a href={`/programs/${program.id}`}>{program.data.name}</a>
+							</h3>
+							<p class="body unit__line">{program.data.tagline}</p>
+						</article>
+					))
+				}
+			</div>
+
+			<p class="body about__intro about__intro--spaced">
+				Governance, decision records and the charter live in <a href="/docs">the documents
+				section</a>.
+			</p>
+		</div>
+	</section>
+
+	<section class="section grid">
+		<div class="rail" aria-hidden="true"><span class="dn">D</span></div>
+		<div class="well">
+			<h2 class="d3 about__heading">Contributing</h2>
+			<p class="longform about__body">
+				This site is the community's record, and members maintain it. Adding an event, a
+				project, a person or a note means adding one Markdown file and opening a pull request
+				— no code, and the build tells you if a field is missing.
+			</p>
+			<div class="about__actions">
+				<a class="link-action m-button" href={SITE.social.github} rel="noopener" target="_blank">
+					The repository <span aria-hidden="true">↗</span>
+				</a>
+				<a class="link-action m-button" href="/apply">
+					Join <span aria-hidden="true">→</span>
+				</a>
+			</div>
+		</div>
+	</section>
+</Base>
+
+<style>
+	.about__body {
+		margin-block-start: 1.25rem;
+		color: var(--ink-2);
+	}
+
+	.about__heading {
+		margin-block-end: 1.5rem;
+	}
+
+	.about__intro {
+		max-inline-size: 62ch;
+		margin-block-end: 1.5rem;
+		color: var(--ink-2);
+	}
+
+	.about__intro--spaced {
+		margin-block-start: 1.5rem;
+	}
+
+	.about__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1.5rem;
+		margin-block-start: 2rem;
+	}
+
+	.values {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0 var(--gutter);
+		border-block-start: 1px solid var(--rule);
+	}
+
+	.values__item {
+		display: grid;
+		grid-template-columns: 2.5rem 1fr;
+		gap: 0.75rem;
+		padding-block: 1.5rem;
+		border-block-end: 1px solid var(--rule);
+	}
+
+	.values__n {
+		color: var(--ink-4);
+		padding-block-start: 0.35rem;
+	}
+
+	.values__body {
+		margin-block-start: 0.5rem;
+		color: var(--ink-3);
+	}
+
+	.unit {
+		padding-block: 1.25rem;
+		border-block-end: 1px solid var(--rule);
+	}
+
+	.unit__line {
+		margin-block-start: 0.35rem;
+		color: var(--ink-2);
+	}
+
+	.aside__heading {
+		padding-block-end: 0.75rem;
+		border-block-end: 1px solid var(--rule-2);
+	}
+
+	.aside__motto {
+		margin-block-start: 1rem;
+	}
+
+	.aside__note {
+		margin-block-start: 0.75rem;
+		color: var(--ink-3);
+	}
+
+	@media (width < 768px) {
+		.values {
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+</style>

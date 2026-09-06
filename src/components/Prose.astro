@@ -1,0 +1,120 @@
+---
+/**
+ * Long-form body copy rendered from MDX.
+ *
+ * Styles are scoped and applied with :global because the markup comes from the
+ * content pipeline, not from this file. Measure is capped at 68ch: past that,
+ * the eye loses the line.
+ */
+---
+
+<div class="prose longform"><slot /></div>
+
+<style>
+	.prose :global(> * + *) {
+		margin-block-start: 1.25rem;
+	}
+
+	.prose :global(h2) {
+		font-size: 1.625rem;
+		line-height: 1.15;
+		letter-spacing: -0.02em;
+		margin-block-start: 2.5rem;
+		padding-block-start: 1.25rem;
+		border-block-start: 1px solid var(--rule);
+	}
+
+	.prose :global(h3) {
+		font-size: 1.25rem;
+		line-height: 1.25;
+		margin-block-start: 2rem;
+	}
+
+	.prose :global(ul),
+	.prose :global(ol) {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		padding-inline-start: 1.5rem;
+	}
+
+	.prose :global(ul) {
+		list-style: none;
+	}
+
+	/* An em dash rather than a bullet: the register is a printed document. */
+	.prose :global(ul > li) {
+		text-indent: -1.5rem;
+	}
+
+	.prose :global(ul > li)::before {
+		content: '— ';
+		color: var(--ink-4);
+	}
+
+	.prose :global(ol) {
+		list-style: decimal;
+	}
+
+	.prose :global(ol > li)::marker {
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		color: var(--ink-4);
+	}
+
+	.prose :global(blockquote) {
+		padding-inline-start: 1.25rem;
+		border-inline-start: 2px solid var(--rule-2);
+		color: var(--ink-2);
+	}
+
+	.prose :global(code) {
+		font-family: var(--font-mono);
+		font-size: 0.875em;
+		padding: 0.1em 0.3em;
+		border: 1px solid var(--rule);
+		border-radius: var(--radius-inline);
+	}
+
+	.prose :global(pre) {
+		padding: 1rem;
+		overflow-x: auto;
+		border: 1px solid var(--rule);
+		background: var(--paper-2);
+	}
+
+	.prose :global(pre code) {
+		padding: 0;
+		border: 0;
+	}
+
+	.prose :global(hr) {
+		margin-block: 2rem;
+	}
+
+	.prose :global(img) {
+		border: 1px solid var(--rule-strong);
+	}
+
+	.prose :global(table) {
+		inline-size: 100%;
+		border-collapse: collapse;
+		font-size: 0.9375rem;
+	}
+
+	.prose :global(th),
+	.prose :global(td) {
+		text-align: start;
+		padding: 0.5rem 0.75rem 0.5rem 0;
+		border-block-end: 1px solid var(--rule);
+	}
+
+	.prose :global(th) {
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--ink-3);
+		font-weight: 500;
+	}
+</style>

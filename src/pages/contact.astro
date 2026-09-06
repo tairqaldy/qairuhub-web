@@ -1,0 +1,81 @@
+---
+import ApplyForm from '../components/ApplyForm'
+import PageHeader from '../components/PageHeader.astro'
+import Base from '../layouts/Base.astro'
+import { SITE } from '../lib/site'
+---
+
+<Base
+	title="Contact"
+	section="/contact"
+	description="Reach the QairuHub core team about partnerships, press, or anything that is not an application."
+>
+	<PageHeader
+		n="07"
+		eyebrow="Contact"
+		title="Talk to us."
+		standfirst="If you want to join, the application form reaches the same people faster. This is for partnerships, press, and everything that is not an application."
+	/>
+
+	<section class="section section--open grid">
+		<div class="rail" aria-hidden="true"></div>
+
+		<div class="col-lead">
+			<ApplyForm variant="contact" client:load />
+		</div>
+
+		<div class="col-gap" aria-hidden="true"></div>
+
+		<aside class="col-aside">
+			<h2 class="m-eyebrow aside__heading">Faster routes</h2>
+			<ul class="aside__list">
+				<li class="small">
+					Day-to-day questions:
+					<a href={SITE.social.telegram} rel="noopener" target="_blank">the Telegram group</a>.
+					Someone usually answers the same day.
+				</li>
+				<li class="small">
+					Code and content:
+					<a href={SITE.social.github} rel="noopener" target="_blank">GitHub</a>. Issues and pull
+					requests are welcome from anyone.
+				</li>
+				<li class="small">
+					Want to join? <a href="/apply">Apply here</a> instead — this form is slower.
+				</li>
+			</ul>
+
+			<h2 class="m-eyebrow aside__heading aside__heading--spaced">Where we are</h2>
+			<p class="m-data aside__where">
+				{SITE.university.name}<br />{SITE.location}
+			</p>
+		</aside>
+	</section>
+</Base>
+
+<style>
+	.aside__heading {
+		padding-block-end: 0.75rem;
+		border-block-end: 1px solid var(--rule-2);
+	}
+
+	.aside__heading--spaced {
+		margin-block-start: 2.5rem;
+	}
+
+	.aside__list {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.aside__list li {
+		padding-block: 0.9rem;
+		border-block-end: 1px solid var(--rule);
+		color: var(--ink-2);
+	}
+
+	.aside__where {
+		margin-block-start: 1rem;
+		color: var(--ink-2);
+		line-height: 1.8;
+	}
+</style>

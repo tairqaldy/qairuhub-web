@@ -1,0 +1,47 @@
+---
+import EmptyState from '../../components/EmptyState.astro'
+import PageHeader from '../../components/PageHeader.astro'
+import Plate from '../../components/Plate.astro'
+import ProjectRow from '../../components/ProjectRow.astro'
+import Base from '../../layouts/Base.astro'
+import { getProjects } from '../../lib/content'
+
+const projects = await getProjects()
+---
+
+<Base
+	title="Projects"
+	section="/projects"
+	description="The registry of what QairuHub members have built — every project with its stage, its team, and a link to the source."
+>
+	<PageHeader
+		n="03"
+		eyebrow="Projects"
+		title="The registry."
+		standfirst="Everything members have built, listed with its real stage. An idea is listed as an idea. Nothing appears here before it exists, and nothing is described as further along than it is."
+	/>
+
+	<Plate />
+
+	<section class="section grid">
+		<div class="rail" aria-hidden="true"><span class="dn">03</span></div>
+		<div class="well">
+			{
+				projects.length > 0 ? (
+					<div class="record">
+						{projects.map((project) => (
+							<ProjectRow project={project} />
+						))}
+					</div>
+				) : (
+					<EmptyState
+						title="The registry is empty."
+						body="Projects are added by pull request. If you have built something at QairuHub, open one — the format is a single Markdown file."
+						actionLabel="How to contribute"
+						actionHref="/about"
+					/>
+				)
+			}
+		</div>
+	</section>
+</Base>

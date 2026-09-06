@@ -245,8 +245,10 @@
 		padding-block: var(--section-pad);
 		border-block-start: 1px solid var(--rule);
 	}
+	/* Follows a page header: it already has the rule and the space above it. */
 	.section--open {
 		border-block-start: 0;
+		padding-block-start: 0;
 	}
 	.rule-2 {
 		border-block-start: 2px solid var(--rule-2);
@@ -675,5 +677,107 @@
 		to {
 			opacity: 1;
 		}
+	}
+}
+
+/* ────────────────────────────────────────────────── form islands ─── */
+
+@layer components {
+	/*
+	 * Styling for the React form islands. Kept here with the rest of the
+	 * component layer rather than in the islands themselves, so the form
+	 * inherits the same tokens as everything else and cannot drift.
+	 */
+	.apply .field,
+	.rsvp .field {
+		margin-block-end: 1.5rem;
+	}
+
+	.field__optional {
+		color: var(--ink-4);
+		text-transform: none;
+		letter-spacing: 0;
+	}
+
+	.field__hint {
+		display: block;
+		margin-block-end: 0.5rem;
+	}
+
+	select.field__input {
+		/* The UA arrow is fine; what is not fine is a hand-drawn one that
+		   ignores the platform's own affordances. */
+		appearance: auto;
+	}
+
+	.apply__check,
+	.rsvp .field + div {
+		margin-block: 1.5rem 1rem;
+	}
+
+	.apply__alert {
+		margin-block-end: 1rem;
+	}
+
+	.apply__submit,
+	.rsvp__submit {
+		margin-block-end: 0.75rem;
+	}
+
+	.rsvp {
+		margin-block-start: 1.5rem;
+	}
+
+	.rsvp__heading {
+		padding-block-end: 0.75rem;
+		margin-block-end: 1.25rem;
+		border-block-end: 1px solid var(--rule-2);
+	}
+
+	.rsvp-done {
+		margin-block-start: 1.5rem;
+		padding-block-start: 1.25rem;
+		border-block-start: 2px solid var(--rule-2);
+	}
+
+	.rsvp-done__body {
+		margin-block-start: 0.5rem;
+		color: var(--ink-2);
+	}
+
+	/*
+	 * The receipt. After a form is sent, the numbered next-steps list is what
+	 * turns a dead end into a process the applicant can follow — the single
+	 * biggest fix the design critique asked for.
+	 */
+	.done {
+		padding-block-start: 1.5rem;
+		border-block-start: 2px solid var(--rule-2);
+	}
+
+	.done__title {
+		margin-block-start: 0.75rem;
+	}
+
+	.done__body {
+		margin-block-start: 1rem;
+		color: var(--ink-2);
+	}
+
+	.done__next-heading {
+		margin-block-start: 2rem;
+		padding-block-end: 0.75rem;
+		border-block-end: 1px solid var(--rule);
+	}
+
+	.done__next {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.done__next li {
+		padding-block: 0.75rem;
+		border-block-end: 1px solid var(--rule);
+		color: var(--ink-2);
 	}
 }

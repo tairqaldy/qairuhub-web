@@ -1,0 +1,149 @@
+---
+import { render } from 'astro:content'
+import type { GetStaticPaths } from 'astro'
+import PageHeader from '../../components/PageHeader.astro'
+import PlaceholderNotice from '../../components/PlaceholderNotice.astro'
+import Plate from '../../components/Plate.astro'
+import Prose from '../../components/Prose.astro'
+import Base from '../../layouts/Base.astro'
+import { getPrograms, isPlaceholder, resolveReference } from '../../lib/content'
+import { formatLongDate } from '../../lib/site'
+
+export const getStaticPaths = (async () => {
+	const programs = await getPrograms()
+	return programs.map((program) => ({ params: { slug: program.id }, props: { program } }))
+}) satisfies GetStaticPaths
+
+const { program } = Astro.props
+const { data } = program
+const { Content } = await render(program)
+const lead = await resolveReference(data.lead)
+
+const now = new Date()
+const intakeOpen =
+	data.status === 'active' && data.intakeCloses !== undefined && data.intakeCloses > now
+
+/* Only facts that exist are listed. An absent field prints nothing at all. */
+const facts = [
+	[
+		'Status',
+		data.status === 'active' ? 'Running' : data.status === 'upcoming' ? 'Upcoming' : 'Paused',
+	],
+	data.startsLabel ? ['Starts', data.startsLabel] : null,
+	data.commitment ? ['Commitment', data.commitment] : null,
+	data.cohortSize ? ['Places', String(data.cohortSize)] : null,
+	data.intakeCloses ? ['Intake closes', formatLongDate(data.intakeCloses)] : null,
+	lead ? ['Lead', lead.data.name] : null,
+].filter((row): row is [string, string] => row !== null)
+---
+
+<Base title={data.name} section="/programs" description={data.tagline}>
+	<PageHeader n="01" eyebrow="Programme" title={data.name} standfirst={data.tagline} />
+
+	<section class="section section--open grid">
+		<div class="rail" aria-hidden="true"></div>
+
+		<div class="col-lead">
+			{isPlaceholder(program) && <PlaceholderNotice />}
+			<Prose><Content /></Prose>
+		</div>
+
+		<div class="col-gap" aria-hidden="true"></div>
+
+		<aside class="col-aside">
+			<h2 class="m-eyebrow facts__heading">Detail</h2>
+			<dl class="facts">
+				{
+					facts.map(([term, value]) => (
+						<div class="facts__row">
+							<dt class="m-label facts__term">{term}</dt>
+							<dd class="m-data facts__value">{value}</dd>
+						</div>
+					))
+				}
+			</dl>
+
+			{data.requirements && (
+				<>
+					<h2 class="m-eyebrow facts__heading facts__heading--spaced">Who it is for</h2>
+					<p class="small facts__req">{data.requirements}</p>
+				</>
+			)}
+
+			{data.outcomes.length > 0 && (
+				<>
+					<h2 class="m-eyebrow facts__heading facts__heading--spaced">What you leave with</h2>
+					<ul class="facts__outcomes">
+						{data.outcomes.map((outcome) => <li class="small">{outcome}</li>)}
+					</ul>
+				</>
+			)}
+
+			{intakeOpen ? (
+				<a class="cta-primary m-button facts__cta" href="/apply">
+					Apply <span aria-hidden="true">→</span>
+				</a>
+			) : (
+				<a class="link-action m-button facts__cta" href="/events">
+					Come to a session instead <span aria-hidden="true">→</span>
+				</a>
+			)}
+		</aside>
+	</section>
+
+	<Plate />
+</Base>
+
+<style>
+	.facts__heading {
+		padding-block-end: 0.75rem;
+		border-block-end: 1px solid var(--rule-2);
+	}
+
+	.facts__heading--spaced {
+		margin-block-start: 2rem;
+	}
+
+	.facts__row {
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+		padding-block: 0.6rem;
+		border-block-end: 1px solid var(--rule);
+	}
+
+	.facts__term {
+		color: var(--ink-3);
+	}
+
+	.facts__value {
+		text-align: end;
+	}
+
+	.facts__req {
+		margin-block-start: 0.75rem;
+		color: var(--ink-2);
+	}
+
+	.facts__outcomes {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		margin-block-start: 0.75rem;
+		color: var(--ink-2);
+	}
+
+	.facts__outcomes li {
+		padding-inline-start: 1rem;
+		text-indent: -1rem;
+	}
+
+	.facts__outcomes li::before {
+		content: '— ';
+		color: var(--ink-4);
+	}
+
+	.facts__cta {
+		margin-block-start: 1.75rem;
+	}
+</style>
