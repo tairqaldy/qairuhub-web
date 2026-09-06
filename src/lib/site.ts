@@ -54,6 +54,20 @@ export const PLANNED_LOCALES = [
 	{ code: 'ru', label: 'РУС' },
 ] as const
 
+/**
+ * The Turnstile site key.
+ *
+ * This is public by design — it is rendered into the page and visible to anyone
+ * who views source — so it lives in the repository rather than in a secret
+ * store, which keeps builds reproducible anywhere without configuration. The
+ * matching *secret* key is set with `wrangler secret put TURNSTILE_SECRET` and
+ * never appears here.
+ *
+ * `PUBLIC_TURNSTILE_SITEKEY` overrides it, so a fork can point at its own widget.
+ */
+export const TURNSTILE_SITEKEY =
+	import.meta.env.PUBLIC_TURNSTILE_SITEKEY || '0x4AAAAAAEqUa4P9ZwmKv4aO'
+
 /** Whether an entry was changed recently enough to earn a margin change-bar. */
 export function isRecentlyChanged(date: Date | undefined, now = new Date()): boolean {
 	if (!date) return false

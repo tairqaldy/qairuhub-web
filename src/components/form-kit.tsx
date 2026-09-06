@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import type { FieldErrors, FormKind } from '../lib/forms'
+import { TURNSTILE_SITEKEY } from '../lib/site'
 
 /**
  * Shared pieces for the three form islands.
@@ -69,24 +70,15 @@ export function Turnstile({
 	const widgetId = useRef<string | null>(null)
 	const [failed, setFailed] = useState(false)
 
-	/*
-	 * Cloudflare's documented always-passes test sitekey, used only in dev.
-	 * Without this a contributor who has not set up a Turnstile account sees a
-	 * dead form and cannot test the flow at all. In production an unset key
-	 * disables the form rather than silently accepting unchecked submissions.
-	 */
-	const configured = import.meta.env.PUBLIC_TURNSTILE_SITEKEY as string | undefined
-	const sitekey = configured ?? (import.meta.env.DEV ? '1x00000000000000000000AA' : undefined)
-
 	useEffect(() => {
-		if (!ref.current || !sitekey) return
+		if (!ref.current || !TURNSTILE_SITEKEY) return
 		let cancelled = false
 
 		loadTurnstile()
 			.then(() => {
 				if (cancelled || !ref.current || !window.turnstile) return
 				widgetId.current = window.turnstile.render(ref.current, {
-					sitekey,
+					sitekey: TURNSTILE_SITEKEY,
 					theme: 'auto',
 					callback: onToken,
 					'expired-callback': () => onToken(''),
@@ -100,7 +92,8 @@ export function Turnstile({
 			if (widgetId.current && window.turnstile) window.turnstile.remove(widgetId.current)
 			widgetId.current = null
 		}
-	}, [sitekey, onToken])
+		// TURNSTILE_SITEKEY is a module constant, so it is not a dependency.
+	}, [onToken])
 
 	useEffect(() => {
 		if (resetSignal > 0 && widgetId.current && window.turnstile) {
@@ -109,7 +102,7 @@ export function Turnstile({
 		}
 	}, [resetSignal, onToken])
 
-	if (!sitekey) {
+	if (!TURNSTILE_SITEKEY) {
 		return (
 			<p className="m-note" role="status">
 				Anti-spam check is not configured, so this form cannot be submitted yet.

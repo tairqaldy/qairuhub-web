@@ -17,6 +17,14 @@
 		"enabled": true
 	},
 
+	// NOTE: custom domains are deliberately NOT configured here.
+	//
+	// @astrojs/cloudflare regenerates the wrangler config into dist/server at
+	// build time and deploy uses that file, which carries "triggers": {} and no
+	// routes — anything declared here is silently dropped. The domains are
+	// attached to the Worker in the Cloudflare dashboard instead, where they
+	// persist across deploys. See docs/ARCHITECTURE.md.
+
 	// Form submissions: applications, RSVPs, contact messages.
 	// Created in EEUR, which is the closest region to Astana.
 	// Migrations live in ./migrations — apply with `pnpm db:migrate:remote`.
