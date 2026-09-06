@@ -4,9 +4,14 @@ import type { CollectionEntry } from 'astro:content'
 
 interface Props {
 	people: CollectionEntry<'people'>[]
+	/**
+	 * On /people the entries are the destination, so each carries its own id as
+	 * an anchor target. Elsewhere the strip links there instead.
+	 */
+	anchored?: boolean
 }
 
-const { people } = Astro.props
+const { people, anchored = false } = Astro.props
 ---
 
 {/*
@@ -16,7 +21,7 @@ const { people } = Astro.props
 */}
 <ul class="strip">
 	{people.map((person) => (
-		<li class="strip__item">
+		<li class="strip__item" id={anchored ? person.id : undefined}>
 			<a class="strip__link" href={`/people#${person.id}`}>
 				{person.data.avatar ? (
 					<Image

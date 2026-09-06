@@ -30,7 +30,7 @@ const entries = await getLearnEntries()
 				entries.length > 0 ? (
 					<div class="record">
 						{entries.map((note) => (
-							<LearnRow note={note} />
+							<LearnRow note={note} headingLevel={2} />
 						))}
 					</div>
 				) : (

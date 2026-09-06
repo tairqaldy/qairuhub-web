@@ -63,30 +63,28 @@ export default defineConfig({
 	 * Self-hosted, subset and preloaded by Astro. No request ever leaves for a
 	 * third-party font CDN.
 	 *
-	 * The display face is a pair, not a splice. Space Grotesk carries no Cyrillic
-	 * at all, so Onest sits behind it in the stack and the browser reaches for it
-	 * on the first Cyrillic codepoint. Measured with `node scripts/font-metrics.mjs`,
-	 * the two agree on cap height to within 1% (700 vs 707 per 1000 em), which is
-	 * why this needs no `size-adjust` gymnastics — and unlike a unicode-range
-	 * splice, there is no hand-maintained range to get wrong.
+	 * ONE display family, covering all three scripts.
+	 *
+	 * This was originally Space Grotesk for Latin with Onest behind it for
+	 * Cyrillic. That silently did not work: Astro registers each family under a
+	 * hashed name ("Onest-9e5a55aca0d744fc"), so naming "Onest" in the fallback
+	 * list matched nothing. Cyrillic headlines fell through to system-ui while
+	 * 88 KB of Onest was downloaded and never drawn — the exact failure the
+	 * design specification set out to avoid.
+	 *
+	 * A cross-family stack cannot be made correct here: Astro appends generic
+	 * fallbacks after the hashed name, and a generic always matches a Cyrillic
+	 * glyph before a later real family gets a turn. Onest carries Latin, Russian
+	 * and all nine Kazakh letter pairs on its own (verified by
+	 * `pnpm check:fonts`), so it does the whole job with no splice to get wrong
+	 * and one fewer font to download. Kazakh, Russian and English now set
+	 * identically, which for this institution is the right default anyway.
 	 */
 	fonts: [
 		{
 			provider: fontProviders.google(),
-			name: 'Space Grotesk',
-			cssVariable: '--font-display-latin',
-			weights: ['500 700'],
-			styles: ['normal'],
-			subsets: /** @type {[string, ...string[]]} */ (['latin', 'latin-ext']),
-			display: 'swap',
-			// Onest comes first in the fallback chain, so the browser reaches a real
-			// display face on the first Cyrillic codepoint rather than a system sans.
-			fallbacks: /** @type {[string, ...string[]]} */ (['Onest', ...SANS_FALLBACK]),
-		},
-		{
-			provider: fontProviders.google(),
 			name: 'Onest',
-			cssVariable: '--font-display-cyrillic',
+			cssVariable: '--font-display-base',
 			weights: ['500 800'],
 			styles: ['normal'],
 			subsets: CYRILLIC,

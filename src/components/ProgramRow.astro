@@ -1,13 +1,21 @@
 ---
 import type { CollectionEntry } from 'astro:content'
+import { isIntakeOpen } from '../lib/content'
 import { isRecentlyChanged } from '../lib/site'
 
 interface Props {
+	/**
+	 * Heading level for the row title. These rows appear under a section h2 on
+	 * the homepage and directly under the page h1 on an index, so the level has
+	 * to follow the context or the document skips a level.
+	 */
+	headingLevel?: 2 | 3
 	program: CollectionEntry<'programs'>
 	index: number
 }
 
-const { program, index } = Astro.props
+const { program, index, headingLevel = 3 } = Astro.props
+const Heading = `h${headingLevel}` as 'h2' | 'h3'
 const { data } = program
 
 /**
@@ -25,8 +33,7 @@ const now = new Date()
  * dated application window. Labelling a running programme "closed" because it
  * has no intake date would turn the whole index into a wall of locked doors.
  */
-const intakeOpen =
-	data.status === 'active' && data.intakeCloses !== undefined && data.intakeCloses > now
+const intakeOpen = isIntakeOpen(program, now)
 
 const STATUS_LABEL = { active: 'Running', upcoming: 'Upcoming', paused: 'Paused' } as const
 const state = intakeOpen ? 'Intake open' : STATUS_LABEL[data.status]
@@ -49,9 +56,9 @@ const changed = isRecentlyChanged(data.updatedDate, now)
 	</div>
 
 	<div class="row__main">
-		<h3 class="record__title">
+		<Heading class="record__title">
 			<a href={`/programs/${program.id}`}>{data.name}</a>
-		</h3>
+		</Heading>
 		<p class="body row__tagline">{data.tagline}</p>
 	</div>
 

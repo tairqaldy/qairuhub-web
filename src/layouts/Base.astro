@@ -65,10 +65,9 @@ const ogImage = image ? new URL(image, canonical) : undefined
 		{ogImage && <meta property="og:image" content={ogImage.href} />}
 		<meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
 
-		{/* Self-hosted and subset by Astro. The two display faces are preloaded
-		    because the nameplate is the LCP element on every page. */}
-		<Font cssVariable="--font-display-latin" preload />
-		<Font cssVariable="--font-display-cyrillic" />
+		{/* Self-hosted and subset by Astro. The display face is preloaded because
+		    the nameplate is the LCP element on every page. */}
+		<Font cssVariable="--font-display-base" preload />
 		<Font cssVariable="--font-sans-base" preload />
 		<Font cssVariable="--font-mono-base" preload />
 

@@ -1,5 +1,5 @@
-import { useCallback, useState } from 'react'
-import { Field, Honeypot, Turnstile, useSubmit } from './form-kit'
+import { useCallback, useRef, useState } from 'react'
+import { ErrorSummary, Field, Honeypot, Turnstile, useSubmit } from './form-kit'
 
 /**
  * The lightest form on the site: name, email, and the event. Anything more is
@@ -13,16 +13,22 @@ export default function RsvpForm({
 	eventTitle: string
 }) {
 	const { state, submit, resetSignal } = useSubmit('rsvp')
+	const formRef = useRef<HTMLFormElement>(null)
 	const [token, setToken] = useState('')
 	const onToken = useCallback((value: string) => setToken(value), [])
+
+	/** Move the keyboard to the first control the server rejected. */
+	const focusFirstInvalid = useCallback(() => {
+		formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()
+	}, [])
 
 	if (state.status === 'success') {
 		return (
 			<div className="rsvp-done" role="status">
 				<p className="d5">You are on the list.</p>
 				<p className="small rsvp-done__body">
-					We have your place for {eventTitle}. If you cannot make it, reply to the confirmation
-					email so someone else can take the spot.
+					We have your place for {eventTitle}. If you cannot make it, let us know in the Telegram
+					group so someone else can take the spot.
 				</p>
 			</div>
 		)
@@ -32,6 +38,7 @@ export default function RsvpForm({
 		<form
 			className="rsvp"
 			noValidate
+			ref={formRef}
 			onSubmit={(event) => {
 				event.preventDefault()
 				const form = new FormData(event.currentTarget)
@@ -46,6 +53,10 @@ export default function RsvpForm({
 			}}
 		>
 			<h2 className="m-eyebrow rsvp__heading">Reserve a place</h2>
+
+			{state.status === 'error' && state.message && (
+				<ErrorSummary message={state.message} errors={state.errors} onJump={focusFirstInvalid} />
+			)}
 
 			<Field label="Name" name="name" required autoComplete="name" error={state.errors.name} />
 			<Field
@@ -66,25 +77,25 @@ export default function RsvpForm({
 			<Honeypot />
 			<Turnstile onToken={onToken} resetSignal={resetSignal} />
 
-			{state.status === 'error' && state.message && (
-				<p className="field__error m-note" role="alert">
-					{state.message}
-				</p>
-			)}
-
+			{/* See ApplyForm: aria-disabled preserves focus and tab order. */}
 			<button
 				className="cta-primary m-button rsvp__submit"
 				type="submit"
-				disabled={state.status === 'submitting' || !token}
+				aria-disabled={state.status === 'submitting' || !token}
+				onClick={(event) => {
+					if (state.status === 'submitting' || !token) event.preventDefault()
+				}}
 			>
 				{state.status === 'submitting' ? 'Sending…' : 'Reserve'}
 			</button>
 
-			{!token && (
-				<p className="m-note" role="status">
-					Complete the check above to enable the button.
-				</p>
-			)}
+			<p className="m-note" aria-live="polite">
+				{state.status === 'submitting'
+					? 'Sending…'
+					: token
+						? ''
+						: 'Complete the anti-spam check above, then this button will send.'}
+			</p>
 		</form>
 	)
 }

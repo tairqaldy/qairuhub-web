@@ -6,7 +6,7 @@ import PlaceholderNotice from '../../components/PlaceholderNotice.astro'
 import Plate from '../../components/Plate.astro'
 import Prose from '../../components/Prose.astro'
 import Base from '../../layouts/Base.astro'
-import { getPrograms, isPlaceholder, resolveReference } from '../../lib/content'
+import { getPrograms, isIntakeOpen, isPlaceholder, resolveReference } from '../../lib/content'
 import { formatLongDate } from '../../lib/site'
 
 export const getStaticPaths = (async () => {
@@ -20,8 +20,7 @@ const { Content } = await render(program)
 const lead = await resolveReference(data.lead)
 
 const now = new Date()
-const intakeOpen =
-	data.status === 'active' && data.intakeCloses !== undefined && data.intakeCloses > now
+const intakeOpen = isIntakeOpen(program, now)
 
 /* Only facts that exist are listed. An absent field prints nothing at all. */
 const facts = [

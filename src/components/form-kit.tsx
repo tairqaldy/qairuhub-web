@@ -172,8 +172,16 @@ export function Field({
 			)}
 
 			{options ? (
-				// biome-ignore lint/a11y/useSemanticElements: this IS the select element
-				<select {...shared}>
+				<select {...shared} defaultValue="">
+					{/*
+					  A required select with no empty first option arrives at the
+					  server already holding its first choice, and a person who never
+					  opened it is recorded as having picked that answer. The empty
+					  option makes "not answered" distinguishable from "answered".
+					*/}
+					<option value="" disabled>
+						Choose one…
+					</option>
 					{options.map((option) => (
 						<option key={option.value} value={option.value}>
 							{option.label}
@@ -209,6 +217,61 @@ export interface SubmitState {
 	status: 'idle' | 'submitting' | 'success' | 'error'
 	message?: string
 	errors: FieldErrors
+}
+
+/**
+ * The error summary that appears above the fields and takes focus when a
+ * submission comes back invalid (docs/DESIGN.md section 12.3).
+ *
+ * Without it, submitting is a dead end for anyone not using a mouse: the
+ * button disables itself while it holds focus, the browser drops focus to
+ * `<body>`, and the per-field messages — which live in `aria-describedby` —
+ * are never announced because nothing visits the fields again.
+ */
+export function ErrorSummary({
+	message,
+	errors,
+	onJump,
+}: {
+	message: string
+	errors: FieldErrors
+	/** Focus the first invalid control. */
+	onJump: () => void
+}) {
+	const ref = useRef<HTMLDivElement>(null)
+	const fields = Object.entries(errors)
+
+	// Announce on arrival, and put the keyboard where the problem is.
+	useEffect(() => {
+		ref.current?.focus()
+	}, [])
+
+	return (
+		<div
+			className="form-error"
+			ref={ref}
+			tabIndex={-1}
+			role="alert"
+			aria-labelledby="form-error-title"
+		>
+			<p className="m-eyebrow" id="form-error-title">
+				Not sent
+			</p>
+			<p className="body form-error__message">{message}</p>
+
+			{fields.length > 0 && (
+				<ul className="form-error__list">
+					{fields.map(([field, text]) => (
+						<li className="small" key={field}>
+							<button className="form-error__jump" type="button" onClick={onJump}>
+								{text}
+							</button>
+						</li>
+					))}
+				</ul>
+			)}
+		</div>
+	)
 }
 
 /**

@@ -35,11 +35,16 @@ or malformed.
 | Person | `src/content/people/` | `<name>.md` |
 | Friday note or guide | `src/content/learn/` | `<slug>.md` |
 | Programme | `src/content/programs/` | `<slug>.md` |
-| Partner | `src/content/partners/` | `<slug>.md` |
+| Partner | `src/content/partners/` | `<slug>.md` — schema only, no page yet |
 | Governance document | `src/content/docs/` | `<slug>.md` |
-| Blog post | `src/content/blog/` | `<slug>.md` |
+| Blog post | `src/content/blog/` | `<slug>.md` — schema only, no page yet |
 
 The existing files in each folder are working templates. Copy one.
+
+**Two of these have schemas but no page yet.** `partners` and `blog` validate
+and build, so entries added now are safe and will appear the moment the pages
+exist — but nothing renders them today. Build the page when there is enough to
+put on it; see docs/STATUS.md.
 
 ### An event
 

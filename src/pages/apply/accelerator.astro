@@ -2,7 +2,7 @@
 import ApplyForm from '../../components/ApplyForm'
 import PageHeader from '../../components/PageHeader.astro'
 import Base from '../../layouts/Base.astro'
-import { getPrograms } from '../../lib/content'
+import { getPrograms, isIntakeOpen } from '../../lib/content'
 import { formatLongDate } from '../../lib/site'
 
 const programs = await getPrograms()
@@ -14,7 +14,7 @@ const now = new Date()
  * shows the closed state and the next best route — it never collects
  * applications it cannot act on.
  */
-const open = accelerator?.data.intakeCloses !== undefined && accelerator.data.intakeCloses > now
+const open = accelerator ? isIntakeOpen(accelerator, now) : false
 ---
 
 <Base

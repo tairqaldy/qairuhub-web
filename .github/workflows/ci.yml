@@ -22,14 +22,11 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: No AI attribution
-        run: pnpm run guard:attribution
-      - name: Typecheck
-        run: pnpm run typecheck
-      - name: Lint & format check
-        run: pnpm run lint
-      - name: Unit tests
-        run: pnpm run test:run
+      # One command, so a guard added to `check` cannot be forgotten here.
+      # The cobalt law shipped for days running in no job at all because this
+      # list was maintained by hand.
+      - name: Verify (typecheck, lint, guards, unit tests)
+        run: pnpm run check
       - name: Build
         run: pnpm run build
       - name: Upload build output

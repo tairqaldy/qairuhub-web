@@ -31,9 +31,12 @@ import { decompress } from 'wawoff2'
  * or the API returns no files at all.
  */
 const SITE_FAMILIES = [
+	// Display — carries every headline in all three scripts.
+	'Onest:wght@500;600;700;800',
+	// Body and UI.
 	'Geist:wght@100..900',
+	// The institutional voice: eyebrows, labels, data.
 	'Geist+Mono:wght@100..900',
-	'Spectral:ital,wght@0,200;0,400;0,600;0,800;1,400',
 ]
 
 const UA =

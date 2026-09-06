@@ -8,7 +8,12 @@ import { NAV, SITE } from '../lib/site'
  * quoted directly, and it is the structural reason the site does not read as
  * one more dark developer page — it ends on white.
  */
-const year = 2026
+/*
+ * Read at build time. Hardcoding it meant the footer would claim 2026 forever;
+ * the site is rebuilt on every content change, so this stays current in
+ * practice and is never wrong by more than one deploy.
+ */
+const year = new Date().getFullYear()
 ---
 
 <footer class="colophon">

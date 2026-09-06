@@ -252,13 +252,24 @@ palette on bare `:root`; redefine only the changed tokens in the two blocks abov
 
 | Family | Faces | Job | Never |
 |---|---|---|---|
-| `--font-display` "QH Display" | Space Grotesk (Latin) **+ Onest (Cyrillic)** | Nameplate, decks, section heads, row titles, rail numerals | UI, buttons, table cells, anything < 1.125rem, uppercase, positive tracking |
+| `--font-display` "QH Display" | **Onest, all scripts** | Nameplate, decks, section heads, row titles, rail numerals | UI, buttons, table cells, anything < 1.125rem, uppercase, positive tracking |
 | `--font-sans` "QH Sans" | **Geist Sans, all scripts** | All reading text, row descriptions, form values | Labels, eyebrows, data, anything > 1.0625rem |
 | `--font-mono` "QH Mono" | **Geist Mono, all scripts** | **The institutional voice** — eyebrows, labels, nav numerals, captions, dates, counts, statuses, clause numbers, buttons, chips, all tabular data | Any paragraph longer than one line |
 
-**Only the display family is a composite.** Geist Sans and Geist Mono each
-contain Latin, Russian Cyrillic and all nine Kazakh letter pairs, so splicing
-them would add complexity and two more font requests for nothing.
+**No family is a composite.** Onest, Geist Sans and Geist Mono each contain
+Latin, Russian Cyrillic and all nine Kazakh letter pairs on their own.
+
+The display face was originally Space Grotesk for Latin with Onest behind it for
+Cyrillic. That could not be made to work through Astro's font API: it registers
+each family under a hashed name, so naming "Onest" in a fallback list matched
+nothing, and Cyrillic headlines fell through to `system-ui` while 88 KB of
+Onest was downloaded and never drawn. A cross-family stack cannot be corrected
+either — Astro appends generic fallbacks after the hashed name, and a generic
+always claims a Cyrillic glyph before a later real family gets a turn.
+
+Onest does the whole job with no splice to get wrong, one fewer font to
+download, and — the part that matters here — Kazakh, Russian and English all
+set in the same face rather than the two local languages getting the fallback.
 
 Mono is roughly a third of the type on this site. That is what makes the page read
 as a printed record rather than a product page. It is not a code voice.
@@ -617,8 +628,13 @@ word or a geometric change. Error states use `--danger`, never cobalt.
    - exactly one `.plate` per page;
    - every `<img>` has non-empty `alt` and a sibling `<figcaption>`;
    - every `input`/`select`/`textarea` border colour resolves to `--rule-strong`.
-3. **Gates** — `/dev/kitchen-sink` (every component, every state, both themes) and
-   `/dev/glyphs` (§5.2). Both fail the build on error.
+3. **Gates** — `/dev/glyphs` (§5.2) renders every family against the Kazakh
+   letters, and `pnpm check:fonts` verifies coverage from the real glyph tables.
+
+   There is deliberately no `/dev/kitchen-sink`: the components are all
+   `.astro`, so they render in situ on the real pages, and `pnpm shots` captures
+   every route at three breakpoints in both themes. A separate gallery would be
+   a second thing to keep in sync with no extra coverage.
 
 ---
 
@@ -1058,7 +1074,7 @@ are the specific ways *Night Edition* goes wrong.
 
 ## 17. Build order
 
-1. Tokens, `/dev/kitchen-sink`, `/dev/glyphs`, and the font architecture (§5.2).
+1. Tokens, `/dev/glyphs`, and the font architecture (§5.2).
    Nothing else starts until Kazakh renders correctly at every size.
 2. The `<768px` layout — rail off, slips, the index sheet. Mobile first, literally.
 3. The grid shell, rail, spine, eyebrow-on-rule, colophon.

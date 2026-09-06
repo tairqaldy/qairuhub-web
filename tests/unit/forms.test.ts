@@ -153,3 +153,51 @@ describe('error messages', () => {
 		}
 	})
 })
+
+describe('constraint messages', () => {
+	it('never shows a raw constraint message, not just a raw type message', () => {
+		// Zod's own text for these reads "Too small: expected string to have >=40
+		// characters" and "Invalid option: expected one of ...". Both are written
+		// for whoever authored the schema, not for a student filling in a form.
+		const cases = [
+			{ ...{ name: 'A Person', email: 'a@example.kz', turnstileToken: 't' }, motivation: 'short' },
+			{
+				name: 'A Person',
+				email: 'a@example.kz',
+				turnstileToken: 't',
+				motivation: 'x'.repeat(50),
+				interests: Array.from({ length: 20 }, () => 'tag'),
+			},
+		]
+
+		for (const input of cases) {
+			const result = membershipSchema.safeParse(input)
+			if (result.success) continue
+			for (const message of Object.values(toFieldErrors(result.error))) {
+				expect(message, `leaked: ${message}`).not.toMatch(
+					/too small|too big|invalid option|expected \w+ to have|unrecognized key/i,
+				)
+			}
+		}
+	})
+
+	it('distinguishes a blank field from a disallowed value', () => {
+		const blank = membershipSchema.safeParse({})
+		expect(blank.success).toBe(false)
+		if (!blank.success) {
+			expect(Object.values(toFieldErrors(blank.error))).toContain('This field is required.')
+		}
+
+		const badTopic = contactSchema.safeParse({
+			name: 'A Person',
+			email: 'a@example.kz',
+			turnstileToken: 't',
+			message: 'A message that is comfortably long enough to pass validation.',
+			topic: 'not-a-real-topic',
+		})
+		expect(badTopic.success).toBe(false)
+		if (!badTopic.success) {
+			expect(toFieldErrors(badTopic.error).topic).toBe('Please choose one of the options.')
+		}
+	})
+})

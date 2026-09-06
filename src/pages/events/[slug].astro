@@ -37,7 +37,13 @@ const facts = [
 	],
 	['Where', where],
 	['Entry', data.walkIn ? 'Walk in — no application' : 'RSVP required'],
-	data.capacity ? ['Places', String(data.capacity)] : null,
+	/*
+	 * Capacity without a live count reads as availability — "Places: 30" looks
+	 * like thirty seats left. DESIGN.md section 13 says the capacity rule
+	 * renders only when a count exists to compare against, so state the total
+	 * as a total and nothing more.
+	 */
+	data.capacity ? ['Room holds', `${data.capacity} people`] : null,
 	hosts.length ? ['Hosted by', hosts.map((h) => h.data.name).join(', ')] : null,
 ].filter((row): row is [string, string] => row !== null)
 ---

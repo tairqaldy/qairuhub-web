@@ -166,8 +166,14 @@
 		align-items: baseline;
 		gap: 0.5rem;
 	}
+	/*
+	 * The numeral reads as one step dimmer than its label. It was 0.72 opacity
+	 * with a comment claiming it never drops below 4.5:1 — at 11px in light
+	 * theme that lands near 3:1, which fails 1.4.3 for text this small. Ink-3 is
+	 * 7.0:1 dark and 5.3:1 light, so a light touch keeps it above 4.5:1 both ways.
+	 */
 	.eyebrow__n {
-		opacity: 0.72; /* one step dimmer than the label, but never below 4.5:1 */
+		opacity: 0.88;
 	}
 	/* Riding a section hairline, with the rule cut behind it. Forbidden over the
 	   plate, over --paper-2, and inside any full-bleed block. */
@@ -457,13 +463,20 @@
 	}
 
 	/* An action link: mono, uppercase, with an arrow that does not animate. */
+	/*
+	 * The site's most-used secondary control. It was 15px tall — the underline
+	 * plus the cap height — against the design's own 44px floor for every hit
+	 * target. The padding grows the target without moving the rule, which stays
+	 * tight under the text.
+	 */
 	.link-action {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.5rem;
+		min-block-size: 44px;
+		padding-block: 0.75rem 0.35rem;
 		text-decoration: none;
 		border-block-end: 1px solid var(--rule-strong);
-		padding-block-end: 2px;
 	}
 	.link-action:hover {
 		border-block-end-color: var(--cobalt);
@@ -494,8 +507,10 @@
 		transition: border-color var(--t-fast) var(--ease-out);
 	}
 
+	/* Placeholder text is small and must stay legible: --ink-4 is a large-text
+	   token only. */
 	.field__input::placeholder {
-		color: var(--ink-4);
+		color: var(--ink-3);
 	}
 
 	.field__input:hover {
@@ -717,8 +732,9 @@
 		margin-block-end: 1.5rem;
 	}
 
+	/* --ink-4 is reserved for >=24px. This is 12px, so it uses --ink-3. */
 	.field__optional {
-		color: var(--ink-4);
+		color: var(--ink-3);
 		text-transform: none;
 		letter-spacing: 0;
 	}
@@ -803,5 +819,54 @@
 		padding-block: 0.75rem;
 		border-block-end: 1px solid var(--rule);
 		color: var(--ink-2);
+	}
+}
+
+/* ─────────────────────────────────────────── form error summary ─── */
+
+@layer components {
+	/*
+	 * Appears above the fields on a rejected submission and takes focus, so a
+	 * keyboard or screen-reader user is told what went wrong at the moment it
+	 * happens rather than having to tab back through the form to discover it.
+	 */
+	.form-error {
+		margin-block-end: 2rem;
+		padding: 1rem 1.25rem;
+		border: 1px solid var(--danger);
+		border-radius: var(--radius-control);
+	}
+
+	.form-error:focus-visible {
+		outline: 2px solid var(--danger);
+		outline-offset: 3px;
+	}
+
+	.form-error__message {
+		margin-block-start: 0.5rem;
+		color: var(--ink-1);
+	}
+
+	.form-error__list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		margin-block-start: 0.75rem;
+	}
+
+	/* Each message is a control that jumps to the field it describes. */
+	.form-error__jump {
+		display: block;
+		inline-size: 100%;
+		min-block-size: 32px;
+		padding: 0.25rem 0;
+		background: none;
+		border: 0;
+		text-align: start;
+		color: var(--danger);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		cursor: pointer;
+		font: inherit;
 	}
 }

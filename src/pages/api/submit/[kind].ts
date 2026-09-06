@@ -1,5 +1,6 @@
 import { env } from 'cloudflare:workers'
 import type { APIContext } from 'astro'
+import { getPastEvents, getUpcomingEvents } from '../../../lib/content'
 import { checkRateLimit, DuplicateSubmissionError, insertSubmission } from '../../../lib/db'
 import { FORM_SCHEMAS, type FormKind, toFieldErrors } from '../../../lib/forms'
 import { notify } from '../../../lib/notify'
@@ -51,8 +52,13 @@ const KIND_LABELS: Record<FormKind, string> = {
 }
 
 export async function POST(context: APIContext): Promise<Response> {
+	/*
+	 * Own-property check, not `in`: `in` walks the prototype chain, so
+	 * /api/submit/constructor resolved to Object.prototype.constructor and threw
+	 * a 500 where a 404 belongs.
+	 */
 	const kind = context.params.kind as FormKind | undefined
-	if (!kind || !(kind in FORM_SCHEMAS)) {
+	if (!kind || !Object.hasOwn(FORM_SCHEMAS, kind)) {
 		return fail('Unknown form.', 404)
 	}
 
@@ -96,11 +102,28 @@ export async function POST(context: APIContext): Promise<Response> {
 		context.request.headers.get('X-Forwarded-For') ??
 		'unknown'
 
-	const withinLimit = await checkRateLimit(db, `${kind}:${clientIp}`, {
-		limit: 5,
-		windowSeconds: 600,
-	})
-	if (!withinLimit) {
+	/*
+	 * Two limits, because one is always wrong.
+	 *
+	 * A single IP bucket punishes the whole campus: QAIRU is behind NAT, so
+	 * five submissions locks out every student on the network. A single email
+	 * bucket does nothing against a script cycling addresses.
+	 *
+	 * So: a tight limit per person, and a loose one per connection that only
+	 * catches genuine flooding.
+	 */
+	const [emailOk, connectionOk] = await Promise.all([
+		checkRateLimit(db, `${kind}:email:${data.email.toLowerCase()}`, {
+			limit: 3,
+			windowSeconds: 600,
+		}),
+		checkRateLimit(db, `ip:${clientIp}`, { limit: 40, windowSeconds: 600 }),
+	])
+
+	if (!emailOk) {
+		return fail('You have sent this a few times already. Please give us a little while.', 429)
+	}
+	if (!connectionOk) {
 		return fail('Too many submissions from this connection. Please try again later.', 429)
 	}
 
@@ -110,6 +133,27 @@ export async function POST(context: APIContext): Promise<Response> {
 		return fail('The anti-spam check did not pass. Please reload the page and try again.', 400, {
 			turnstileToken: 'Please complete the check again.',
 		})
+	}
+
+	/*
+	 * An event-bound submission has to name a real, future event. Nothing
+	 * checked this: any 120-character string was accepted, and a student could
+	 * RSVP to a session that finished last month and be told they were on the
+	 * list. Pages are prerendered, so their idea of "upcoming" is only as fresh
+	 * as the last deploy — this check runs per request and is the one that
+	 * actually protects the student.
+	 */
+	if (kind === 'rsvp' || kind === 'hackathon') {
+		const slug = (data as { eventSlug?: string }).eventSlug
+		const [upcoming, past] = await Promise.all([getUpcomingEvents(), getPastEvents()])
+		const event = [...upcoming, ...past].find((entry) => entry.id === slug)
+
+		if (!event) {
+			return fail('We could not find that event.', 404)
+		}
+		if (past.some((entry) => entry.id === slug)) {
+			return fail('That event has already taken place.', 410)
+		}
 	}
 
 	// Everything that is not a shared column goes into the JSON payload.
@@ -143,7 +187,23 @@ export async function POST(context: APIContext): Promise<Response> {
 		})
 	} catch (error) {
 		if (error instanceof DuplicateSubmissionError) {
-			return fail('We already have a submission from that email address.', 409)
+			/*
+			 * Only applications and RSVPs are unique per person — contact
+			 * messages are a conversation and may repeat (migration 0002).
+			 *
+			 * Telling the sender plainly is the honest answer: silently
+			 * pretending it worked would leave someone believing a message was
+			 * delivered that never was, which is exactly what this project
+			 * refuses to do elsewhere. It does leak that an address has already
+			 * applied, but the rate limiter caps probing at five per ten
+			 * minutes and the alternative is lying to a student.
+			 */
+			return fail(
+				kind === 'rsvp'
+					? 'You are already on the list for this one.'
+					: 'We already have an application from that email address.',
+				409,
+			)
 		}
 		console.error('submission insert failed', error)
 		return fail('Something went wrong saving that. Please try again.', 500)
@@ -154,10 +214,13 @@ export async function POST(context: APIContext): Promise<Response> {
 		['Name', name],
 		['Email', email],
 		...(telegram ? ([['Telegram', telegram]] as Array<[string, string]>) : []),
-		...Object.entries(rest).map(
-			([key, value]) =>
-				[key, Array.isArray(value) ? value.join(', ') : String(value)] as [string, string],
-		),
+		// Skip fields the person left blank rather than printing "undefined".
+		...Object.entries(rest)
+			.filter(([, value]) => value !== undefined && value !== null && value !== '')
+			.map(
+				([key, value]) =>
+					[key, Array.isArray(value) ? value.join(', ') : String(value)] as [string, string],
+			),
 	]
 
 	context.locals.cfContext.waitUntil(

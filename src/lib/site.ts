@@ -75,9 +75,23 @@ export function isRecentlyChanged(date: Date | undefined, now = new Date()): boo
 	return now.getTime() - date.getTime() <= sevenDays && date.getTime() <= now.getTime()
 }
 
+/**
+ * Everything on this site happens in Astana, so every date and time is
+ * rendered there — including on a phone set to another timezone.
+ *
+ * This is not cosmetic. Omitting it makes the date fall back to the reader's
+ * zone while the time stays in Almaty, so a 01:00 session shows Monday's date
+ * beside Sunday's time for anyone west of Kazakhstan.
+ */
+export const SITE_TIMEZONE = 'Asia/Almaty'
+
 /** `14.09` — the site's date format, always tabular. */
 export function formatShortDate(date: Date, locale = 'en-GB'): string {
-	return new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit' }).format(date)
+	return new Intl.DateTimeFormat(locale, {
+		day: '2-digit',
+		month: '2-digit',
+		timeZone: SITE_TIMEZONE,
+	}).format(date)
 }
 
 /** `14 September 2026` */
@@ -86,6 +100,7 @@ export function formatLongDate(date: Date, locale = 'en-GB'): string {
 		day: 'numeric',
 		month: 'long',
 		year: 'numeric',
+		timeZone: SITE_TIMEZONE,
 	}).format(date)
 }
 
@@ -95,6 +110,25 @@ export function formatTime(date: Date, locale = 'en-GB'): string {
 		hour: '2-digit',
 		minute: '2-digit',
 		hour12: false,
-		timeZone: 'Asia/Almaty',
+		timeZone: SITE_TIMEZONE,
 	}).format(date)
+}
+
+/**
+ * A machine-readable date for `<time datetime>` that carries Astana's offset,
+ * so assistive tech and search engines read the same instant the page shows
+ * rather than the UTC equivalent on a different calendar day.
+ */
+export function machineDate(date: Date): string {
+	const parts = new Intl.DateTimeFormat('en-CA', {
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit',
+		hour: '2-digit',
+		minute: '2-digit',
+		hour12: false,
+		timeZone: SITE_TIMEZONE,
+	}).formatToParts(date)
+	const get = (type: string) => parts.find((part) => part.type === type)?.value ?? '00'
+	return `${get('year')}-${get('month')}-${get('day')}T${get('hour')}:${get('minute')}+05:00`
 }

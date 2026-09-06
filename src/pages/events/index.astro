@@ -34,7 +34,7 @@ const [upcoming, past] = await Promise.all([getUpcomingEvents(), getPastEvents()
 				upcoming.length > 0 ? (
 					<div class="record">
 						{upcoming.map((event) => (
-							<EventRow event={event} />
+							<EventRow event={event} headingLevel={2} />
 						))}
 					</div>
 				) : (
@@ -61,7 +61,7 @@ const [upcoming, past] = await Promise.all([getUpcomingEvents(), getPastEvents()
 					</h2>
 					<div class="record">
 						{past.map((event) => (
-							<EventRow event={event} />
+							<EventRow event={event} headingLevel={2} />
 						))}
 					</div>
 				</div>

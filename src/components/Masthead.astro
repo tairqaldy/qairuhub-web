@@ -305,12 +305,27 @@ const MOTTO = ['Learn it.', 'Build it.', 'Launch it.']
 		toggle.addEventListener('click', () => setOpen(sheet.hasAttribute('hidden')))
 		close.addEventListener('click', () => setOpen(false))
 
-		sheet.addEventListener('keydown', (event) => {
+		/*
+		 * Listen on the document, not the sheet. Bound to the sheet, Escape
+		 * stopped working the moment focus left it — and focus does leave it,
+		 * because a click on the backdrop moves focus to <body>, at which point
+		 * Tab escaped the trap entirely.
+		 */
+		document.addEventListener('keydown', (event) => {
+			if (sheet.hidden) return
+
 			if (event.key === 'Escape') {
 				setOpen(false)
 				return
 			}
 			if (event.key !== 'Tab') return
+
+			// Focus outside the sheet (e.g. on <body>) is pulled back in.
+			if (!sheet.contains(document.activeElement)) {
+				event.preventDefault()
+				focusable()[0]?.focus()
+				return
+			}
 
 			const items = focusable()
 			if (items.length === 0) return

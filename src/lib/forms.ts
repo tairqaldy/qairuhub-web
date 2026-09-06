@@ -115,7 +115,21 @@ export type FieldErrors = Record<string, string>
  * received undefined". That is a message for a developer, and it must never
  * reach a student filling in a form.
  */
-const RAW_VALIDATOR_TEXT = /expected \w+, received|invalid_type|^invalid input/i
+const RAW_VALIDATOR_TEXT =
+	/expected \w+, received|invalid_type|^invalid input|^too (small|big)|^invalid option|^unrecognized key|^invalid enum|^invalid format/i
+
+/**
+ * What to say instead, by Zod issue code. Each one tells the reader what to do
+ * rather than describing the constraint that failed.
+ */
+const FALLBACK_MESSAGE: Record<string, string> = {
+	invalid_type: 'This field is required.',
+	too_small: 'This is a little short — please add a bit more.',
+	too_big: 'This is too long. Please shorten it.',
+	invalid_value: 'Please choose one of the options.',
+	invalid_format: 'Please check the format of this field.',
+	unrecognized_keys: 'Please check this field.',
+}
 
 /**
  * Flatten a Zod error into one message per field.
@@ -130,7 +144,21 @@ export function toFieldErrors(error: z.ZodError): FieldErrors {
 		const key = issue.path.join('.') || 'form'
 		if (errors[key]) continue
 
-		errors[key] = RAW_VALIDATOR_TEXT.test(issue.message) ? 'This field is required.' : issue.message
+		// A message the schema author wrote is always better than anything
+		// generic, so it is used as-is.
+		if (!RAW_VALIDATOR_TEXT.test(issue.message)) {
+			errors[key] = issue.message
+			continue
+		}
+
+		/*
+		 * Otherwise Zod's default text has surfaced, and it is written for
+		 * whoever wrote the schema: "Too small: expected string to have >=40
+		 * characters". Translate by issue code — Zod v4 issues carry no `input`,
+		 * so the code is the only reliable discriminator — into something that
+		 * tells the reader what to actually do.
+		 */
+		errors[key] = FALLBACK_MESSAGE[issue.code] ?? 'Please check this field.'
 	}
 	return errors
 }

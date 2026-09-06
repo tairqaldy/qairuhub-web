@@ -1,0 +1,30 @@
+# Security headers for every response.
+#
+# The Cloudflare adapter appends its own immutable Cache-Control block for
+# /_astro/* to this file at build time, so keep those rules out of here.
+
+/*
+  # No other origin may frame the site.
+  X-Frame-Options: DENY
+  # Do not let a browser second-guess a declared content type.
+  X-Content-Type-Options: nosniff
+  # Send the origin to other sites, the full path only to ourselves.
+  Referrer-Policy: strict-origin-when-cross-origin
+  # This site asks for none of these. Saying so stops an embedded frame asking.
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  # HTTPS only, for a year, including subdomains.
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  #
+  # Content Security Policy.
+  #
+  # Turnstile needs challenges.cloudflare.com for its script and its iframe.
+  # Cloudflare injects its own Web Analytics beacon from static.cloudflareinsights.com
+  # and posts to cloudflareinsights.com; omitting either silently kills analytics.
+  # 'unsafe-inline' on style-src is required because Astro inlines critical CSS
+  # and scoped component styles; script-src needs it for the inline theme
+  # script that runs before first paint to prevent a flash of the wrong theme.
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://challenges.cloudflare.com https://cloudflareinsights.com; frame-src https://challenges.cloudflare.com; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests
+
+# The form endpoint must never be cached.
+/api/*
+  Cache-Control: no-store

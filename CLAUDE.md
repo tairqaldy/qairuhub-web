@@ -78,13 +78,19 @@ depends on its API.** Do not trust the research doc's version claims.
 - Never run `--dangerously-skip-permissions`.
 
 ## 8. Verification before "done"
-Screenshot every changed page at 375 / 768 / 1440 and check it against the
-anti-slop and a11y checklists in `docs/DESIGN.md`. `/dev/kitchen-sink` renders
-every component in every state in both themes — use it as the component gate.
-`pnpm check` must pass.
+`pnpm check` must pass, and `pnpm e2e` asserts the mechanical design rules on
+every route at three breakpoints.
+
+For anything visual, run `pnpm shots` — it captures every route at
+375 / 768 / 1440 and fails on horizontal overflow or console errors — and check
+the result against the anti-slop and a11y checklists in `docs/DESIGN.md`.
+
+`/dev/glyphs` is the trilingual gate: it renders every family against the nine
+Kazakh letter pairs. Run `pnpm check:fonts` after any change to the type stack.
 
 ## 9. Real data only
-The site must not display invented numbers, people, or outcomes. Sample content
-in `src/content/` is marked `TODO:REAL-DATA` in its frontmatter; the build fails
-if such an entry is referenced from a stats or metrics slot. Stat modules render
-nothing rather than render a guess. See `docs/CONTENT.md`.
+The site must not display invented numbers, people, or outcomes. Sample content in `src/content/` carries `placeholder: true`, and
+`src/lib/content.ts` excludes those entries from production builds — every page
+reads through it rather than calling `getCollection` directly. An index with no
+real entries renders a designed empty state rather than a guess. See
+`docs/CONTENT.md`.

@@ -30,7 +30,7 @@ const projects = await getProjects()
 				projects.length > 0 ? (
 					<div class="record">
 						{projects.map((project) => (
-							<ProjectRow project={project} />
+							<ProjectRow project={project} headingLevel={2} />
 						))}
 					</div>
 				) : (

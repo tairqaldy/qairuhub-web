@@ -9,16 +9,29 @@ import { getPrograms } from '../../lib/content'
 const programs = await getPrograms()
 ---
 
+{/*
+  The heading and description are derived from what is actually published, never
+  asserted. Writing "Four ways in" in the template made the page claim four
+  programmes on a build that rendered none.
+*/}
 <Base
 	title="Programmes"
 	section="/programs"
-	description="The four programmes QairuHub runs: hands-on AI building, hackathon sprints, the accelerator, and peer learning."
+	description={
+		programs.length > 0
+			? `The ${programs.length} programme${programs.length === 1 ? '' : 's'} QairuHub runs, each with its commitment and entry requirements stated plainly.`
+			: 'The programmes QairuHub runs. None are published yet.'
+	}
 >
 	<PageHeader
 		n="01"
 		eyebrow="Programmes"
-		title="Four ways in."
-		standfirst="You do not have to pick one. Most members start at a Friday session and end up in two or three of these. Every programme states its commitment and its entry bar plainly — if there is no bar, it says so."
+		title={programs.length > 0 ? 'Ways in.' : 'Programmes.'}
+		standfirst={
+			programs.length > 0
+				? 'You do not have to pick one. Most members start at a Friday session and end up in two or three of these. Every programme states its commitment and its entry bar plainly — if there is no bar, it says so.'
+				: 'Nothing is published here yet. When a programme runs, it appears with its commitment and entry requirements stated plainly.'
+		}
 	/>
 
 	<Plate />
@@ -30,7 +43,7 @@ const programs = await getPrograms()
 				programs.length > 0 ? (
 					<div class="record">
 						{programs.map((program, i) => (
-							<ProgramRow program={program} index={i} />
+							<ProgramRow program={program} index={i} headingLevel={2} />
 						))}
 					</div>
 				) : (

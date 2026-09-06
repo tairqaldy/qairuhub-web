@@ -42,7 +42,7 @@
 	--danger: oklch(0.7 0.17 25); /* 6.9:1  errors only              */
 
 	/* ── Type. Astro's font API supplies the family variables. ── */
-	--font-display: var(--font-display-latin);
+	--font-display: var(--font-display-base);
 	--font-sans: var(--font-sans-base);
 	--font-mono: var(--font-mono-base);
 

@@ -1,7 +1,11 @@
 name: Deploy
 
 on:
-  push:
+  # Only after CI has actually passed on this commit. Triggering on push meant
+  # a red build still published to production.
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -37,7 +41,10 @@ jobs:
     #
     # Until then, deploy from a machine that is already logged in:
     #   pnpm run deploy:prod
-    if: vars.CD_ENABLED == 'true'
+    if: >-
+      vars.CD_ENABLED == 'true' &&
+      (github.event_name == 'workflow_dispatch' ||
+       github.event.workflow_run.conclusion == 'success')
 
     environment:
       name: production

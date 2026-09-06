@@ -17,10 +17,11 @@
 	.theme {
 		display: inline-flex;
 		align-items: center;
-		min-block-size: 32px;
+		min-block-size: 44px;
 		padding-inline: 0.5rem;
 		background: transparent;
-		border: 1px solid var(--rule);
+		/* A control's only boundary must clear 3:1 — WCAG 1.4.11. */
+		border: 1px solid var(--rule-strong);
 		border-radius: var(--radius-inline);
 		color: var(--ink-3);
 		cursor: pointer;

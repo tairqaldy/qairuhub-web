@@ -1,6 +1,6 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import type { FormKind } from '../lib/forms'
-import { Field, Honeypot, Turnstile, useSubmit } from './form-kit'
+import { ErrorSummary, Field, Honeypot, Turnstile, useSubmit } from './form-kit'
 
 /**
  * The application forms: membership, accelerator, hackathon, and contact.
@@ -31,6 +31,34 @@ const SUCCESS: Record<Variant, { title: string; body: string }> = {
 	},
 }
 
+/**
+ * The steps differ per form. Showing a contact message the membership
+ * application ladder ("we invite you to a session to meet people") describes
+ * something that is simply not going to happen.
+ */
+const NEXT_STEPS: Record<Variant, string[]> = {
+	membership: [
+		'We read it. Every application gets a human reply.',
+		'If it is a fit, we invite you to a session to meet people.',
+		'You pick something to work on and start.',
+	],
+	accelerator: [
+		'We read it and look at whatever you linked.',
+		'We talk to the teams that fit, before the cohort opens.',
+		'Selected teams start with a kickoff and a deadline.',
+	],
+	hackathon: [
+		'You are on the list for this one.',
+		'Details and the room go out by email a few days before.',
+		'Turn up with a laptop. Teams form on the day.',
+	],
+	contact: [
+		'Someone from the core team reads it.',
+		'You get a reply at the address you gave.',
+		'For anything faster, the Telegram group is the better route.',
+	],
+}
+
 export default function ApplyForm({
 	variant,
 	eventSlug,
@@ -40,8 +68,14 @@ export default function ApplyForm({
 	eventSlug?: string
 }) {
 	const { state, submit, resetSignal } = useSubmit(variant)
+	const formRef = useRef<HTMLFormElement>(null)
 	const [token, setToken] = useState('')
 	const onToken = useCallback((value: string) => setToken(value), [])
+
+	/** Move the keyboard to the first control the server rejected. */
+	const focusFirstInvalid = useCallback(() => {
+		formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()
+	}, [])
 
 	if (state.status === 'success') {
 		const copy = SUCCESS[variant]
@@ -52,9 +86,11 @@ export default function ApplyForm({
 				<p className="body done__body">{copy.body}</p>
 				<p className="m-eyebrow done__next-heading">What happens next</p>
 				<ol className="done__next">
-					<li className="small">01 — We read it. Every application gets a human reply.</li>
-					<li className="small">02 — If it is a fit, we invite you to a session to meet people.</li>
-					<li className="small">03 — You pick something to work on and start.</li>
+					{NEXT_STEPS[variant].map((step, i) => (
+						<li className="small" key={step}>
+							{String(i + 1).padStart(2, '0')} — {step}
+						</li>
+					))}
 				</ol>
 			</div>
 		)
@@ -66,6 +102,7 @@ export default function ApplyForm({
 		<form
 			className="apply"
 			noValidate
+			ref={formRef}
 			onSubmit={(event) => {
 				event.preventDefault()
 				const form = new FormData(event.currentTarget)
@@ -75,6 +112,10 @@ export default function ApplyForm({
 				submit(values)
 			}}
 		>
+			{state.status === 'error' && state.message && (
+				<ErrorSummary message={state.message} errors={state.errors} onJump={focusFirstInvalid} />
+			)}
+
 			<Field label="Name" name="name" required autoComplete="name" error={state.errors.name} />
 			<Field
 				label="Email"
@@ -206,25 +247,30 @@ export default function ApplyForm({
 				<Turnstile onToken={onToken} resetSignal={resetSignal} />
 			</div>
 
-			{state.status === 'error' && state.message && (
-				<p className="field__error m-note apply__alert" role="alert">
-					{state.message}
-				</p>
-			)}
-
+			{/*
+			  aria-disabled rather than disabled: a disabled control cannot hold
+			  focus, so disabling the button the instant it is pressed drops the
+			  keyboard to the top of the document. It also keeps the control in
+			  the tab order, so it can still be found and its state read.
+			*/}
 			<button
 				className="cta-primary m-button apply__submit"
 				type="submit"
-				disabled={busy || !token}
+				aria-disabled={busy || !token}
+				onClick={(event) => {
+					if (busy || !token) event.preventDefault()
+				}}
 			>
 				{busy ? 'Sending…' : 'Send'}
 			</button>
 
-			{!token && (
-				<p className="m-note" role="status">
-					Complete the check above to enable the button.
-				</p>
-			)}
+			<p className="m-note" aria-live="polite">
+				{busy
+					? 'Sending your application…'
+					: token
+						? ''
+						: 'Complete the anti-spam check above, then this button will send.'}
+			</p>
 		</form>
 	)
 }

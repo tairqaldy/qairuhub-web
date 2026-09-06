@@ -102,22 +102,27 @@ const VALUES = [
 		<div class="well">
 			<h2 class="d3 about__heading">How it is organised</h2>
 			<p class="body about__intro">
-				One umbrella organisation with sub-units. Each runs its own sessions and has its own
-				lead, and members move between them freely.
+				{
+					programs.length > 0
+						? 'One umbrella organisation with sub-units. Each runs its own sessions and has its own lead, and members move between them freely.'
+						: 'QairuHub is one umbrella organisation with sub-units, each running its own sessions. None are published yet — they appear here as they are written up.'
+				}
 			</p>
 
-			<div class="record">
-				{
-					programs.map((program) => (
-						<article class="unit">
-							<h3 class="record__title">
-								<a href={`/programs/${program.id}`}>{program.data.name}</a>
-							</h3>
-							<p class="body unit__line">{program.data.tagline}</p>
-						</article>
-					))
-				}
-			</div>
+			{
+				programs.length > 0 && (
+					<div class="record">
+						{programs.map((program) => (
+							<article class="unit">
+								<h3 class="record__title">
+									<a href={`/programs/${program.id}`}>{program.data.name}</a>
+								</h3>
+								<p class="body unit__line">{program.data.tagline}</p>
+							</article>
+						))}
+					</div>
+				)
+			}
 
 			<p class="body about__intro about__intro--spaced">
 				Governance, decision records and the charter live in <a href="/docs">the documents

@@ -1,22 +1,36 @@
 ---
 import type { CollectionEntry } from 'astro:content'
-import { formatTime, isRecentlyChanged } from '../lib/site'
+import {
+	formatLongDate,
+	formatTime,
+	isRecentlyChanged,
+	machineDate,
+	SITE_TIMEZONE,
+} from '../lib/site'
 
 interface Props {
+	/**
+	 * Heading level for the row title. These rows appear under a section h2 on
+	 * the homepage and directly under the page h1 on an index, so the level has
+	 * to follow the context or the document skips a level.
+	 */
+	headingLevel?: 2 | 3
 	event: CollectionEntry<'events'>
 }
 
-const { event } = Astro.props
+const { event, headingLevel = 3 } = Astro.props
+const Heading = `h${headingLevel}` as 'h2' | 'h3'
 const { data } = event
 
 /**
  * A diary row. The date sits at display size as a figure, the way a printed
  * diary sets it — day large, month beneath.
  */
-const day = new Intl.DateTimeFormat('en-GB', { day: '2-digit', timeZone: 'Asia/Almaty' }).format(
-	data.starts,
-)
-const month = new Intl.DateTimeFormat('en-GB', { month: 'short', timeZone: 'Asia/Almaty' })
+const day = new Intl.DateTimeFormat('en-GB', {
+	day: '2-digit',
+	timeZone: SITE_TIMEZONE,
+}).format(data.starts)
+const month = new Intl.DateTimeFormat('en-GB', { month: 'short', timeZone: SITE_TIMEZONE })
 	.format(data.starts)
 	.toUpperCase()
 
@@ -28,17 +42,27 @@ const where = data.room ? `${data.location} · ${data.room}` : data.location
 	<div class="row__date">
 		<span class="dn row__day" aria-hidden="true">{day}</span>
 		<span class="m-label row__month" aria-hidden="true">{month}</span>
-		<time class="visually-hidden" datetime={data.starts.toISOString()}>
-			{data.starts.toISOString()}
+		{/*
+		  Screen readers get the same date a sighted reader sees, in words. The
+		  raw ISO string was both unreadable aloud and in UTC, which is a
+		  different calendar day from the one printed beside it.
+		*/}
+		<time class="visually-hidden" datetime={machineDate(data.starts)}>
+			{formatLongDate(data.starts)}, {formatTime(data.starts)}
 		</time>
 	</div>
 
 	<div class="row__main">
-		<h3 class="record__title">
+		<Heading class="record__title">
 			<a href={`/events/${event.id}`}>{data.title}</a>
-		</h3>
+		</Heading>
 		<p class="m-data row__meta">
-			{changed && <span class="change-bar" aria-hidden="true"></span>}
+			{changed && (
+			<>
+				<span class="change-bar" aria-hidden="true" />
+				<span class="visually-hidden">Updated in the last week.</span>
+			</>
+		)}
 			{formatTime(data.starts)} · {where}
 		</p>
 		<p class="body row__summary">{data.summary}</p>

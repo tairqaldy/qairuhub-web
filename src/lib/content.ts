@@ -84,6 +84,23 @@ export async function getPrograms() {
 	)
 }
 
+/**
+ * Whether a programme is genuinely accepting applications right now.
+ *
+ * Both the status and the intake date have to agree. Checking only the date
+ * meant /apply opened a live form for a paused programme that /programs was
+ * simultaneously describing as closed — two pages of the same site stating
+ * different facts about the same thing.
+ */
+export function isIntakeOpen(
+	program: { data: { status: string; intakeCloses?: Date } },
+	now = new Date(),
+): boolean {
+	if (program.data.status !== 'active') return false
+	if (!program.data.intakeCloses) return false
+	return program.data.intakeCloses > now
+}
+
 // ── Projects ──────────────────────────────────────────────────────────────
 
 /** Projects, newest first, with launched work surfaced ahead of ideas. */

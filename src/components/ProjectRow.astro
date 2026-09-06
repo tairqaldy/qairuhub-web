@@ -3,10 +3,17 @@ import type { CollectionEntry } from 'astro:content'
 import { formatShortDate, isRecentlyChanged } from '../lib/site'
 
 interface Props {
+	/**
+	 * Heading level for the row title. These rows appear under a section h2 on
+	 * the homepage and directly under the page h1 on an index, so the level has
+	 * to follow the context or the document skips a level.
+	 */
+	headingLevel?: 2 | 3
 	project: CollectionEntry<'projects'>
 }
 
-const { project } = Astro.props
+const { project, headingLevel = 3 } = Astro.props
+const Heading = `h${headingLevel}` as 'h2' | 'h3'
 const { data } = project
 
 const STAGE_LABEL = {
@@ -21,14 +28,19 @@ const changed = isRecentlyChanged(data.updatedDate)
 
 <article class="row">
 	<div class="row__meta">
-		{changed && <span class="change-bar" aria-hidden="true"></span>}
+		{changed && (
+			<>
+				<span class="change-bar" aria-hidden="true" />
+				<span class="visually-hidden">Updated in the last week.</span>
+			</>
+		)}
 		<span class="m-data">{formatShortDate(data.started)}</span>
 	</div>
 
 	<div class="row__main">
-		<h3 class="record__title">
+		<Heading class="record__title">
 			<a href={`/projects/${project.id}`}>{data.name}</a>
-		</h3>
+		</Heading>
 		<p class="body row__line">{data.oneLiner}</p>
 		{data.tags.length > 0 && (
 			<ul class="row__tags">

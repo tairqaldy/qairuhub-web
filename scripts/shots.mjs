@@ -29,7 +29,23 @@ function arg(name, fallback) {
 	return values.length ? values : fallback
 }
 
-const routes = arg('routes', ['/'])
+/** Every public route, so the documented "all routes" is what actually runs. */
+const ALL_ROUTES = [
+	'/',
+	'/about',
+	'/programs',
+	'/events',
+	'/projects',
+	'/learn',
+	'/people',
+	'/docs',
+	'/apply',
+	'/apply/accelerator',
+	'/contact',
+	'/404',
+]
+
+const routes = arg('routes', ALL_ROUTES)
 const widths = arg('widths', ['375', '768', '1440']).map(Number)
 const themes = arg('themes', ['dark'])
 
@@ -66,8 +82,9 @@ for (const theme of themes) {
 			 * a page with a form would never settle and the capture would time out.
 			 */
 			const response = await page.goto(url, { waitUntil: 'domcontentloaded' })
-			if (!response || response.status() >= 400) {
-				problems.push(`${route} returned ${response?.status()}`)
+			const expected = route === '/404' ? 404 : 200
+			if (!response || response.status() !== expected) {
+				problems.push(`${route} returned ${response?.status()}, expected ${expected}`)
 				continue
 			}
 			await page.evaluate(() => document.fonts.ready)

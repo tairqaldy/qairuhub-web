@@ -28,7 +28,7 @@ const [people, alumni] = await Promise.all([getPeople(), getAlumni()])
 		<div class="well">
 			{
 				people.length > 0 ? (
-					<PeopleStrip people={people} />
+					<PeopleStrip people={people} anchored />
 				) : (
 					<EmptyState
 						title="The roster is not published yet."
@@ -47,7 +47,7 @@ const [people, alumni] = await Promise.all([getPeople(), getAlumni()])
 					<h2 class="eyebrow m-eyebrow people__heading">
 						<span>Alumni</span>
 					</h2>
-					<PeopleStrip people={alumni} />
+					<PeopleStrip people={alumni} anchored />
 				</div>
 			</section>
 		)
